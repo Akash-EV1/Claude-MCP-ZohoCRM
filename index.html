@@ -50,6 +50,7 @@
   .response-body { padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; font-weight: 300; white-space: pre-wrap; word-break: break-word; background: var(--surface2); border: 1px solid; border-top: none; border-radius: 0 0 12px 12px; }
   .response-body.success { border-color: rgba(76,175,130,0.25); color: #c8f0df; }
   .response-body.error { border-color: rgba(232,82,82,0.25); color: #f0c8c8; }
+  .action-badge { display: inline-block; background: rgba(232,103,58,0.15); border: 1px solid rgba(232,103,58,0.3); border-radius: 6px; padding: 2px 8px; font-size: 10px; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 8px; }
   .status-bar { margin-top: 20px; display: flex; align-items: center; justify-content: space-between; animation: fadeUp 0.6s ease 0.2s both; }
   .status-indicator { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
@@ -84,13 +85,14 @@
 
     <div class="prompt-section">
       <div class="field-label"><span class="dot"></span> What do you want to do?</div>
-      <textarea id="prompt" placeholder="e.g. Create a lead with name John Doe and email john@example.com&#10;e.g. Show me all deals above 50000&#10;e.g. Update lead Test 1001 phone to +91-9876543210&#10;e.g. Create a workflow that sends email when lead is created"></textarea>
+      <textarea id="prompt" placeholder="e.g. Create a lead with name John Doe and email john@example.com&#10;e.g. Find all leads created this month&#10;e.g. Update lead Test 1001 phone to +91-9876543210&#10;e.g. Search contact by email john@example.com&#10;e.g. Show me all deals above 50000"></textarea>
       <div class="examples">
         <span class="example-chip" onclick="setPrompt(this)">Create a lead named John Doe</span>
-        <span class="example-chip" onclick="setPrompt(this)">Show all leads with no email</span>
-        <span class="example-chip" onclick="setPrompt(this)">Update lead Test 1001 phone to +91-9876543210</span>
-        <span class="example-chip" onclick="setPrompt(this)">Get all deals this month</span>
-        <span class="example-chip" onclick="setPrompt(this)">Search contact by email john@example.com</span>
+        <span class="example-chip" onclick="setPrompt(this)">Show all leads</span>
+        <span class="example-chip" onclick="setPrompt(this)">Search lead by email john@example.com</span>
+        <span class="example-chip" onclick="setPrompt(this)">Show all deals sorted by newest</span>
+        <span class="example-chip" onclick="setPrompt(this)">Find contact named Akash</span>
+        <span class="example-chip" onclick="setPrompt(this)">Create a task to follow up tomorrow</span>
       </div>
     </div>
 
@@ -133,18 +135,34 @@
     const btnText = document.getElementById('btnText');
     btn.disabled          = loading;
     spinner.style.display = loading ? 'block' : 'none';
-    btnText.textContent   = loading ? 'Claude is working...' : '⚡ Execute in Zoho CRM';
+    btnText.textContent   = loading ? 'Claude is thinking...' : '⚡ Execute in Zoho CRM';
   }
 
-  function showResponse(type, text) {
+  function showResponse(type, data) {
     const card   = document.getElementById('responseCard');
     const header = document.getElementById('responseHeader');
     const body   = document.getElementById('responseBody');
     card.style.display = 'block';
     header.className   = 'response-header ' + type;
-    body.className     = 'response-body '   + type;
-    header.innerHTML   = type === 'success' ? '✅ &nbsp;Action Completed' : '❌ &nbsp;Error';
-    body.textContent   = text;
+
+    if (type === 'success') {
+      header.innerHTML = `✅ &nbsp;Action Completed`;
+      const badge = data.action ? `<div class="action-badge">${data.action.toUpperCase()} → ${data.module}</div>\n` : '';
+      body.textContent = '';
+      if (data.action) {
+        body.innerHTML = `<div class="action-badge">${data.action.toUpperCase()} → ${data.module}</div>`;
+        const pre = document.createElement('div');
+        pre.textContent = data.result;
+        body.appendChild(pre);
+      } else {
+        body.textContent = data.result || 'Done.';
+      }
+    } else {
+      header.innerHTML = '❌ &nbsp;Error';
+      body.textContent = typeof data === 'string' ? data : data.error || JSON.stringify(data);
+    }
+
+    body.className = 'response-body ' + type;
   }
 
   async function runAgent() {
@@ -158,30 +176,23 @@
     document.getElementById('responseCard').style.display = 'none';
 
     try {
-      // Send both prompt and apiKey to the Worker — Worker handles everything else
       const response = await fetch(WORKER_URL, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey })
+        body:    JSON.stringify({ prompt, apiKey })
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        showResponse('error', data?.error?.message || data?.error || JSON.stringify(data));
+      if (!response.ok || data.error) {
+        showResponse('error', data);
         return;
       }
 
-      let result = '';
-      if (data.content && Array.isArray(data.content)) {
-        for (const item of data.content) {
-          if (item.type === 'text') result += item.text;
-        }
-      }
-      showResponse('success', result || 'Action completed successfully.');
+      showResponse('success', data);
 
     } catch (err) {
-      showResponse('error', 'Error: ' + err.message);
+      showResponse('error', 'Network error: ' + err.message);
     } finally {
       setLoading(false);
     }
