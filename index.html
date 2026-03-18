@@ -9,13 +9,13 @@
   :root {
     --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24; --border: #2a2a3a;
     --accent: #e8673a; --accent2: #f0a070; --text: #f0ede8; --muted: #6b6880;
-    --success: #4caf82; --error: #e85252;
+    --success: #4caf82; --error: #e85252; --warning: #f0a030;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow-x: hidden; }
   body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 30% 20%, rgba(232,103,58,0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(240,160,112,0.04) 0%, transparent 50%); pointer-events: none; z-index: 0; }
   .container { width: 100%; max-width: 720px; position: relative; z-index: 1; }
-  .header { margin-bottom: 40px; animation: fadeDown 0.6s ease both; }
+  .header { margin-bottom: 32px; animation: fadeDown 0.6s ease both; }
   .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
   .logo-text { font-size: 13px; font-family: 'JetBrains Mono', monospace; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
@@ -32,7 +32,7 @@
   .toggle-key { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px; transition: color 0.2s; }
   .toggle-key:hover { color: var(--accent); }
   .divider { height: 1px; background: var(--border); margin: 20px 0; }
-  textarea { width: 100%; min-height: 140px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 300; line-height: 1.7; outline: none; resize: vertical; transition: border-color 0.2s; }
+  textarea { width: 100%; min-height: 120px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 300; line-height: 1.7; outline: none; resize: vertical; transition: border-color 0.2s; }
   textarea::placeholder { color: var(--muted); }
   textarea:focus { border-color: var(--accent); }
   .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -43,22 +43,37 @@
   .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,103,58,0.35); }
   .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
   .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+
+  /* Response area */
   .response-card { margin-top: 16px; border-radius: 12px; overflow: hidden; display: none; }
   .response-header { padding: 10px 16px; font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-  .response-header.success { background: rgba(76,175,130,0.15); color: var(--success); border: 1px solid rgba(76,175,130,0.25); border-bottom: none; border-radius: 12px 12px 0 0; }
-  .response-header.error { background: rgba(232,82,82,0.15); color: var(--error); border: 1px solid rgba(232,82,82,0.25); border-bottom: none; border-radius: 12px 12px 0 0; }
+  .response-header.success  { background: rgba(76,175,130,0.15); color: var(--success); border: 1px solid rgba(76,175,130,0.25); border-bottom: none; border-radius: 12px 12px 0 0; }
+  .response-header.error    { background: rgba(232,82,82,0.15);  color: var(--error);   border: 1px solid rgba(232,82,82,0.25);  border-bottom: none; border-radius: 12px 12px 0 0; }
+  .response-header.warning  { background: rgba(240,160,48,0.15); color: var(--warning); border: 1px solid rgba(240,160,48,0.25); border-bottom: none; border-radius: 12px 12px 0 0; }
   .response-body { padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; font-weight: 300; white-space: pre-wrap; word-break: break-word; background: var(--surface2); border: 1px solid; border-top: none; border-radius: 0 0 12px 12px; }
   .response-body.success { border-color: rgba(76,175,130,0.25); color: #c8f0df; }
-  .response-body.error { border-color: rgba(232,82,82,0.25); color: #f0c8c8; }
-  .action-badge { display: inline-block; background: rgba(232,103,58,0.15); border: 1px solid rgba(232,103,58,0.3); border-radius: 6px; padding: 2px 8px; font-size: 10px; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 8px; }
+  .response-body.error   { border-color: rgba(232,82,82,0.25);  color: #f0c8c8; }
+  .response-body.warning { border-color: rgba(240,160,48,0.25); color: #f0e0b0; }
+  .action-badge { display: inline-block; background: rgba(232,103,58,0.15); border: 1px solid rgba(232,103,58,0.3); border-radius: 6px; padding: 2px 8px; font-size: 10px; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 10px; }
+
+  /* Disambiguation input */
+  .disambig-section { margin-top: 12px; display: none; }
+  .disambig-section.visible { display: block; }
+  .disambig-input-wrap { display: flex; gap: 10px; margin-top: 8px; }
+  .disambig-input { flex: 1; background: var(--surface2); border: 1px solid var(--warning); border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; outline: none; }
+  .disambig-input:focus { border-color: var(--accent); }
+  .disambig-btn { padding: 10px 20px; background: var(--warning); border: none; border-radius: 10px; color: #000; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .disambig-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(240,160,48,0.3); }
+
   .status-bar { margin-top: 20px; display: flex; align-items: center; justify-content: space-between; animation: fadeUp 0.6s ease 0.2s both; }
   .status-indicator { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
   .powered-by { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); opacity: 0.6; }
+
   @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(16px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin     { to { transform: rotate(360deg); } }
+  @keyframes pulse    { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 </style>
 </head>
 <body>
@@ -73,6 +88,7 @@
   </div>
 
   <div class="card">
+    <!-- API Key -->
     <div class="api-section">
       <div class="field-label"><span class="dot"></span> Claude API Key</div>
       <div class="api-key-wrap">
@@ -83,27 +99,39 @@
 
     <div class="divider"></div>
 
+    <!-- Prompt -->
     <div class="prompt-section">
       <div class="field-label"><span class="dot"></span> What do you want to do?</div>
-      <textarea id="prompt" placeholder="e.g. Create a lead with name John Doe and email john@example.com&#10;e.g. Find all leads created this month&#10;e.g. Update lead Test 1001 phone to +91-9876543210&#10;e.g. Search contact by email john@example.com&#10;e.g. Show me all deals above 50000"></textarea>
+      <textarea id="prompt" placeholder="e.g. Create a lead named John Doe with email john@gmail.com&#10;e.g. Update John Doe's phone to +91-9876543210&#10;e.g. Show all leads&#10;e.g. Search contact by email john@gmail.com&#10;e.g. Find all deals above 50000"></textarea>
       <div class="examples">
         <span class="example-chip" onclick="setPrompt(this)">Create a lead named John Doe</span>
         <span class="example-chip" onclick="setPrompt(this)">Show all leads</span>
         <span class="example-chip" onclick="setPrompt(this)">Search lead by email john@example.com</span>
+        <span class="example-chip" onclick="setPrompt(this)">Update John Doe's phone to +91-9876543210</span>
         <span class="example-chip" onclick="setPrompt(this)">Show all deals sorted by newest</span>
-        <span class="example-chip" onclick="setPrompt(this)">Find contact named Akash</span>
         <span class="example-chip" onclick="setPrompt(this)">Create a task to follow up tomorrow</span>
       </div>
     </div>
 
+    <!-- Submit -->
     <button class="submit-btn" id="submitBtn" onclick="runAgent()">
       <div class="spinner" id="spinner"></div>
       <span id="btnText">⚡ Execute in Zoho CRM</span>
     </button>
 
+    <!-- Response -->
     <div class="response-card" id="responseCard">
       <div class="response-header" id="responseHeader"></div>
-      <div class="response-body" id="responseBody"></div>
+      <div class="response-body"   id="responseBody"></div>
+    </div>
+
+    <!-- Disambiguation input (shown when multiple records found) -->
+    <div class="disambig-section" id="disambigSection">
+      <div class="field-label"><span class="dot" style="background:var(--warning)"></span> Which record do you mean?</div>
+      <div class="disambig-input-wrap">
+        <input type="text" class="disambig-input" id="disambigInput" placeholder='Type "1", "2" or describe e.g. "the one at Google"' />
+        <button class="disambig-btn" onclick="resolveDisambig()">Confirm →</button>
+      </div>
     </div>
   </div>
 
@@ -118,6 +146,8 @@
 
 <script>
   const WORKER_URL = 'https://claude-proxy.akash-v.workers.dev';
+
+  let pendingAction = null; // Stores pending action when disambiguation needed
 
   function toggleKey() {
     const input = document.getElementById('apiKey');
@@ -138,68 +168,112 @@
     btnText.textContent   = loading ? 'Claude is thinking...' : '⚡ Execute in Zoho CRM';
   }
 
-  function showResponse(type, data) {
+  function showResponse(type, headerText, bodyText) {
     const card   = document.getElementById('responseCard');
     const header = document.getElementById('responseHeader');
     const body   = document.getElementById('responseBody');
-    card.style.display = 'block';
-    header.className   = 'response-header ' + type;
+    card.style.display  = 'block';
+    header.className    = 'response-header ' + type;
+    body.className      = 'response-body '   + type;
+    header.innerHTML    = headerText;
+    body.textContent    = bodyText;
+  }
 
-    if (type === 'success') {
-      header.innerHTML = `✅ &nbsp;Action Completed`;
-      const badge = data.action ? `<div class="action-badge">${data.action.toUpperCase()} → ${data.module}</div>\n` : '';
-      body.textContent = '';
-      if (data.action) {
-        body.innerHTML = `<div class="action-badge">${data.action.toUpperCase()} → ${data.module}</div>`;
-        const pre = document.createElement('div');
-        pre.textContent = data.result;
-        body.appendChild(pre);
-      } else {
-        body.textContent = data.result || 'Done.';
-      }
-    } else {
-      header.innerHTML = '❌ &nbsp;Error';
-      body.textContent = typeof data === 'string' ? data : data.error || JSON.stringify(data);
+  function showDisambig(show) {
+    const section = document.getElementById('disambigSection');
+    section.className = show ? 'disambig-section visible' : 'disambig-section';
+    if (show) {
+      document.getElementById('disambigInput').value = '';
+      document.getElementById('disambigInput').focus();
     }
+  }
 
-    body.className = 'response-body ' + type;
+  async function callWorker(payload) {
+    const response = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'content-type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+    return await response.json();
   }
 
   async function runAgent() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const prompt = document.getElementById('prompt').value.trim();
 
-    if (!apiKey) { showResponse('error', 'Please enter your Claude API key.'); return; }
-    if (!prompt) { showResponse('error', 'Please enter a prompt.'); return; }
+    if (!apiKey) { showResponse('error', '❌ &nbsp;Error', 'Please enter your Claude API key.'); return; }
+    if (!prompt) { showResponse('error', '❌ &nbsp;Error', 'Please enter a prompt.'); return; }
 
     setLoading(true);
+    showDisambig(false);
+    pendingAction = null;
     document.getElementById('responseCard').style.display = 'none';
 
     try {
-      const response = await fetch(WORKER_URL, {
-        method:  'POST',
-        headers: { 'content-type': 'application/json' },
-        body:    JSON.stringify({ prompt, apiKey })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        showResponse('error', data);
-        return;
-      }
-
-      showResponse('success', data);
-
+      const data = await callWorker({ prompt, apiKey });
+      handleResponse(data, apiKey);
     } catch (err) {
-      showResponse('error', 'Network error: ' + err.message);
+      showResponse('error', '❌ &nbsp;Error', 'Network error: ' + err.message);
     } finally {
       setLoading(false);
     }
   }
 
+  async function resolveDisambig() {
+    const apiKey    = document.getElementById('apiKey').value.trim();
+    const selection = document.getElementById('disambigInput').value.trim();
+    if (!selection || !pendingAction) return;
+
+    setLoading(true);
+    showDisambig(false);
+
+    try {
+      const data = await callWorker({ apiKey, pending_action: pendingAction, user_selection: selection });
+      handleResponse(data, apiKey);
+    } catch (err) {
+      showResponse('error', '❌ &nbsp;Error', 'Network error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleResponse(data, apiKey) {
+    if (data.status === 'needs_clarification') {
+      // Multiple records found — show clarification UI
+      pendingAction = data.pending_action;
+      showResponse('warning', '⚠️ &nbsp;Multiple Records Found', data.message);
+      showDisambig(true);
+      return;
+    }
+
+    if (!data.success && data.error) {
+      showResponse('error', '❌ &nbsp;Error', data.error);
+      return;
+    }
+
+    if (data.success) {
+      const badge  = data.action ? `[${data.action.toUpperCase()} → ${data.module}]\n` : '';
+      showResponse('success', '✅ &nbsp;Action Completed', badge + (data.result || 'Done.'));
+      return;
+    }
+
+    showResponse('error', '❌ &nbsp;Error', JSON.stringify(data));
+  }
+
+  // Allow Ctrl+Enter to submit
   document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runAgent();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      if (document.getElementById('disambigSection').classList.contains('visible')) {
+        resolveDisambig();
+      } else {
+        runAgent();
+      }
+    }
+  });
+
+  // Allow Enter in disambiguation input
+  document.getElementById('disambigInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') resolveDisambig();
   });
 </script>
 </body>
