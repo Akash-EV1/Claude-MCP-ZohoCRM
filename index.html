@@ -115,10 +115,7 @@
 </div>
 
 <script>
-  const WORKER_URL    = 'https://claude-proxy.akash-v.workers.dev';
-  const REFRESH_TOKEN = '1000.904e5fa9a2f15117735f543e9d6246b2.6aefe6d6b82f40a7a5deb297a134d4d3';
-  const CLIENT_ID     = '1000.ADPF33PZC55RD5IU5NHQL5EW5DFAFG';
-  const CLIENT_SECRET = '148110bafc0b1c8f01c59af2b258cab114dbf07fdf';
+  const WORKER_URL = 'https://claude-proxy.akash-v.workers.dev';
 
   function toggleKey() {
     const input = document.getElementById('apiKey');
@@ -150,21 +147,6 @@
     body.textContent   = text;
   }
 
-  async function getZohoAccessToken() {
-    const res = await fetch('https://accounts.zoho.in/oauth/v2/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        refresh_token: REFRESH_TOKEN,
-        client_id:     CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        grant_type:    'refresh_token'
-      })
-    });
-    const data = await res.json();
-    return data.access_token;
-  }
-
   async function runAgent() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const prompt = document.getElementById('prompt').value.trim();
@@ -176,39 +158,17 @@
     document.getElementById('responseCard').style.display = 'none';
 
     try {
-      // Step 1: Get fresh Zoho access token
-      const zohoToken = await getZohoAccessToken();
-      if (!zohoToken) {
-        showResponse('error', 'Failed to get Zoho access token. Please check credentials.');
-        return;
-      }
-
-      // Step 2: Call Claude API via Worker with Zoho MCP
+      // Send both prompt and apiKey to the Worker — Worker handles everything else
       const response = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: {
-          'x-api-key':         apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-beta':    'mcp-client-2025-04-04',
-          'content-type':      'application/json'
-        },
-        body: JSON.stringify({
-          model:      'claude-sonnet-4-20250514',
-          max_tokens: 4096,
-          mcp_servers: [{
-            type: 'url',
-            url:  'https://lead-management-mcp-server-60067040455.zohomcp.in/mcp/message',
-            name: 'zoho-crm',
-            authorization_token: zohoToken
-          }],
-          messages: [{ role: 'user', content: prompt }]
-        })
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt, apiKey })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        showResponse('error', data?.error?.message || JSON.stringify(data));
+        showResponse('error', data?.error?.message || data?.error || JSON.stringify(data));
         return;
       }
 
