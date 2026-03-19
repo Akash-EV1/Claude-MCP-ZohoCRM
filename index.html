@@ -136,12 +136,12 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     </div>
 
     <div class="examples" id="exampleChips">
-      <span class="example-chip" onclick="useExample(this)">How many leads do we have?</span>
-      <span class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1c6f7d6e7d745c7d7f7179327f7371">[email&#160;protected]</a></span>
-      <span class="example-chip" onclick="useExample(this)">Update John Doe's email to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dab0b5b2b49abdb7bbb3b6f4b9b5b7">[email&#160;protected]</a></span>
-      <span class="example-chip" onclick="useExample(this)">Show all deals sorted by amount</span>
-      <span class="example-chip" onclick="useExample(this)">Find leads with no email</span>
-      <span class="example-chip" onclick="useExample(this)">What's our expected revenue this quarter?</span>
+      <span class="example-chip" onclick="fillInput('How many leads do we have?')">How many leads do we have?</span>
+      <span class="example-chip" onclick="fillInput('Create a lead named Sarah Johnson with email sarah@acme.com')">Create a lead named Sarah Johnson</span>
+      <span class="example-chip" onclick="fillInput('Update John Doe email to john@gmail.com')">Update John Doe&apos;s email</span>
+      <span class="example-chip" onclick="fillInput('Show all deals sorted by amount')">Show all deals sorted by amount</span>
+      <span class="example-chip" onclick="fillInput('Find leads with no email')">Find leads with no email</span>
+      <span class="example-chip" onclick="fillInput('What is our expected revenue this quarter?')">Expected revenue this quarter?</span>
     </div>
 
     <div class="chat-divider"></div>
@@ -179,8 +179,12 @@ I'll always ask for confirmation before making any changes, and I'll never affec
   }
 
   function useExample(el) {
+    fillInput(el.textContent.trim());
+  }
+
+  function fillInput(text) {
     const ta = document.getElementById('userInput');
-    ta.value = el.textContent;
+    ta.value = text;
     ta.focus();
     autoResize(ta);
   }
@@ -191,7 +195,11 @@ I'll always ask for confirmation before making any changes, and I'll never affec
   }
 
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      sendMessage();
+    }
   }
 
   function apiKey() { return document.getElementById('apiKey').value.trim(); }
