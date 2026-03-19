@@ -7,13 +7,13 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
   :root {
-    --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a24; --border:#2a2a3a;
-    --accent:#e8673a; --accent2:#f0a070; --text:#f0ede8; --muted:#6b6880;
-    --success:#4caf82; --error:#e85252; --warning:#f0a030; --info:#4a9fd4;
+    --bg:#f5f6fa; --surface:#ffffff; --surface2:#f0f2f8; --border:#dde1ee;
+    --accent:#e8673a; --accent2:#c94f25; --text:#1a1d2e; --muted:#7a7f9a;
+    --success:#2e9e6b; --error:#d63b3b; --warning:#d4860a; --info:#2a7fc4;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-x:hidden;}
-  body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(232,103,58,.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(240,160,112,.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(232,103,58,.04) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(232,103,58,.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
   .container{width:100%;max-width:760px;position:relative;z-index:1;padding-top:28px;}
 
   /* Header */
@@ -26,64 +26,64 @@
   .subtitle{margin-top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);font-weight:300;}
 
   /* API Key */
-  .api-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:14px;animation:fadeUp .5s ease .05s both;}
+  .api-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:14px;animation:fadeUp .5s ease .05s both;box-shadow:0 2px 8px rgba(0,0,0,.05);}
   .field-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
   .dot{width:4px;height:4px;border-radius:50%;background:var(--accent);display:inline-block;}
   .api-key-wrap{position:relative;}
-  input[type=password],input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 36px 9px 11px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
+  input[type=password],input[type=text]{width:100%;background:#f8f9fc;border:1px solid var(--border);border-radius:7px;padding:9px 36px 9px 11px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
   input:focus{border-color:var(--accent);}
   .toggle-key{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;transition:color .2s;}
   .toggle-key:hover{color:var(--accent);}
 
   /* Chat */
-  .chat-area{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .5s ease .1s both;}
+  .chat-area{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .5s ease .1s both;box-shadow:0 2px 12px rgba(0,0,0,.06);}
 
   /* Messages */
   .messages{padding:14px;display:flex;flex-direction:column;gap:10px;min-height:100px;max-height:420px;overflow-y:auto;}
   .messages::-webkit-scrollbar{width:3px;}
-  .messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .messages::-webkit-scrollbar-thumb{background:#c8ccd8;border-radius:2px;}
   .msg{display:flex;gap:9px;animation:fadeUp .25s ease both;}
   .msg.user{flex-direction:row-reverse;}
   .msg-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px;}
   .msg.agent .msg-avatar{background:var(--accent);}
   .msg.user  .msg-avatar{background:var(--surface2);border:1px solid var(--border);}
   .msg-bubble{max-width:86%;padding:9px 13px;border-radius:11px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
-  .msg.agent .msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;}
-  .msg.user  .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;}
-  .msg.error .msg-bubble{border-color:rgba(232,82,82,.35);color:#f0c0c0;}
-  .msg.blocked .msg-bubble{border-color:rgba(240,160,48,.35);color:#f0e0a0;}
+  .msg.agent .msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .msg.user  .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;box-shadow:0 1px 3px rgba(232,103,58,.3);}
+  .msg.error .msg-bubble{border-color:rgba(214,59,59,.3);color:#b02020;background:#fff5f5;}
+  .msg.blocked .msg-bubble{border-color:rgba(212,134,10,.3);color:#8a5a00;background:#fffbf0;}
 
   /* Typing */
   .typing{display:flex;gap:3px;align-items:center;padding:3px 0;}
-  .typing span{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite;}
+  .typing span{width:5px;height:5px;border-radius:50%;background:#b0b4c8;animation:bounce 1.2s infinite;}
   .typing span:nth-child(2){animation-delay:.2s;}
   .typing span:nth-child(3){animation-delay:.4s;}
 
   /* Confirmation card */
-  .confirm-card{margin:4px 0 0 35px;background:rgba(232,103,58,.06);border:1px solid rgba(232,103,58,.25);border-radius:10px;padding:12px 14px;animation:fadeUp .3s ease both;}
+  .confirm-card{margin:4px 0 0 35px;background:#fff8f5;border:1px solid rgba(232,103,58,.3);border-radius:10px;padding:12px 14px;animation:fadeUp .3s ease both;box-shadow:0 2px 8px rgba(232,103,58,.1);}
   .confirm-title{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
   .confirm-summary{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);margin-bottom:10px;line-height:1.6;}
-  .confirm-details{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap;}
+  .confirm-details{background:#f5f7fc;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap;}
   .confirm-btns{display:flex;gap:8px;}
   .btn-confirm{background:var(--success);border:none;border-radius:7px;padding:7px 16px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
   .btn-confirm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(76,175,130,.3);}
-  .btn-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 16px;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-cancel{background:#f5f6fa;border:1px solid var(--border);border-radius:7px;padding:7px 16px;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
   .btn-cancel:hover{border-color:var(--error);color:var(--error);}
 
   /* Clarification options */
   .clarify-options{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
-  .clarify-opt{background:rgba(232,103,58,.08);border:1px solid rgba(232,103,58,.25);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--accent2);cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;}
-  .clarify-opt:hover{background:rgba(232,103,58,.18);}
+  .clarify-opt{background:#fff5f0;border:1px solid rgba(232,103,58,.3);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--accent2);cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;}
+  .clarify-opt:hover{background:#ffe8df;}
 
   /* Examples */
   .examples{display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 11px;}
-  .example-chip{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:3px 9px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .example-chip{background:#f0f2f8;border:1px solid var(--border);border-radius:14px;padding:3px 9px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
   .example-chip:hover{border-color:var(--accent);color:var(--accent2);}
 
   /* Divider + Input */
   .chat-divider{height:1px;background:var(--border);}
   .input-area{padding:11px 14px;display:flex;gap:9px;align-items:flex-end;}
-  textarea{flex:1;min-height:38px;max-height:110px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:300;line-height:1.5;outline:none;resize:none;transition:border-color .2s;}
+  textarea{flex:1;min-height:38px;max-height:110px;background:#f8f9fc;border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:400;line-height:1.5;outline:none;resize:none;transition:border-color .2s;}
   textarea::placeholder{color:var(--muted);}
   textarea:focus{border-color:var(--accent);}
   .send-btn{width:38px;height:38px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
@@ -96,7 +96,7 @@
   .status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 5px var(--success);animation:pulse 2s infinite;}
   .status-right{display:flex;gap:8px;align-items:center;}
   .api-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-  .clear-btn{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:2px 7px;cursor:pointer;transition:all .2s;}
+  .clear-btn{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);background:#f5f6fa;border:1px solid var(--border);border-radius:4px;padding:2px 7px;cursor:pointer;transition:all .2s;}
   .clear-btn:hover{border-color:var(--accent);color:var(--accent);}
 
   @keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
@@ -113,7 +113,7 @@
       <div class="logo-icon">⚡</div>
       <span class="logo-text">Zoho × Claude</span>
     </div>
-    <h1>Your Zoho <span>AI Agent</span></h1>
+    <h1>Zoho <span>AI Agent</span></h1>
     <p class="subtitle">// ask anything → claude plans → confirms → zoho acts</p>
   </div>
 
@@ -136,12 +136,12 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     </div>
 
     <div class="examples" id="exampleChips">
-      <span class="example-chip" onclick="useExample(this)">How many leads do we have?</span>
-      <span class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, sarah@acme.com</span>
-      <span class="example-chip" onclick="useExample(this)">Update John Doe's email to john@gmail.com</span>
-      <span class="example-chip" onclick="useExample(this)">Show all deals sorted by amount</span>
-      <span class="example-chip" onclick="useExample(this)">Find leads with no email</span>
-      <span class="example-chip" onclick="useExample(this)">What's our expected revenue this quarter?</span>
+      <span class="example-chip" onclick="fillInput('How many leads do we have?')">How many leads do we have?</span>
+      <span class="example-chip" onclick="fillInput('Create a lead named Sarah Johnson with email sarah@acme.com')">Create a lead named Sarah Johnson</span>
+      <span class="example-chip" onclick="fillInput('Update John Doe email to john@gmail.com')">Update John Doe&apos;s email</span>
+      <span class="example-chip" onclick="fillInput('Show all deals sorted by amount')">Show all deals sorted by amount</span>
+      <span class="example-chip" onclick="fillInput('Find leads with no email')">Find leads with no email</span>
+      <span class="example-chip" onclick="fillInput('What is our expected revenue this quarter?')">Expected revenue this quarter?</span>
     </div>
 
     <div class="chat-divider"></div>
@@ -165,7 +165,7 @@ I'll always ask for confirmation before making any changes, and I'll never affec
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const WORKER_URL = 'https://claude-proxy.akash-v.workers.dev';
 
   let history     = [];
@@ -179,8 +179,12 @@ I'll always ask for confirmation before making any changes, and I'll never affec
   }
 
   function useExample(el) {
+    fillInput(el.textContent.trim());
+  }
+
+  function fillInput(text) {
     const ta = document.getElementById('userInput');
-    ta.value = el.textContent;
+    ta.value = text;
     ta.focus();
     autoResize(ta);
   }
@@ -191,7 +195,11 @@ I'll always ask for confirmation before making any changes, and I'll never affec
   }
 
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      sendMessage();
+    }
   }
 
   function apiKey() { return document.getElementById('apiKey').value.trim(); }
@@ -393,14 +401,4 @@ I'll always ask for confirmation before making any changes, and I'll never affec
   // ── Clear chat ─────────────────────────────────────────────────────────────
   function clearChat() {
     history = []; pendingTool = null; sessionCalls = 0;
-    document.getElementById('apiCount').textContent = '';
-    document.getElementById('messages').innerHTML = `
-      <div class="msg agent">
-        <div class="msg-avatar">⚡</div>
-        <div class="msg-bubble">Chat cleared! How can I help you with your Zoho CRM?</div>
-      </div>`;
-    document.getElementById('exampleChips').style.display = 'flex';
-  }
-</script>
-</body>
-</html>
+    document.getElementById('apiCount').textCo
