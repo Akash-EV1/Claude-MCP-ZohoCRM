@@ -587,9 +587,38 @@ Or type a name and I'll search for it:`);
     try {
       let module, recordId;
 
-      if (target.includes('/')) {
-        // Direct module/id format
-        [module, recordId] = target.split('/');
+      // Clean up target input
+      const cleanTarget = target.trim();
+
+      if (cleanTarget.includes('/')) {
+        // Direct module/id format e.g. "Leads/429870000005707001"
+        [module, recordId] = cleanTarget.split('/');
+      } else if (/^\d{15,}$/.test(cleanTarget)) {
+        // Just a numeric ID — search all modules to find which one it belongs to
+        addMsg('agent', `🔍 Looking up record ID ${cleanTarget}...`);
+        const modulesToTry = ['Leads', 'Contacts', 'Deals', 'Accounts', 'Tasks'];
+        let foundMod = null;
+        for (const mod of modulesToTry) {
+          try {
+            const r = await fetch(`${WORKER_URL}/search`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ apiKey: key, module: mod, criteria: `(id:equals:${cleanTarget})` })
+            });
+            const d = await r.json();
+            if (d.records && d.records.length > 0) {
+              foundMod = mod;
+              recordId = cleanTarget;
+              module   = mod;
+              break;
+            }
+          } catch(e) { /* try next */ }
+        }
+        if (!foundMod) {
+          // Fallback — use Leads with the ID directly
+          module   = 'Leads';
+          recordId = cleanTarget;
+        }
       } else {
         // Smart search — try multiple strategies
         addMsg('agent', `🔍 Searching for "${target}"...`);
@@ -598,15 +627,20 @@ Or type a name and I'll search for it:`);
         let foundRecord = null;
         let foundModule = null;
 
+        // Try both original and title-case versions
+        const titleCaseTarget = cleanTarget.replace(/\b\w/g, c => c.toUpperCase());
+        const searchTerms = [cleanTarget];
+        if (titleCaseTarget !== cleanTarget) searchTerms.push(titleCaseTarget);
+
         for (const mod of modulesToSearch) {
-          // Strategy 1: word search (full name)
+          // Strategy 1: word search — try each case variation
           let searchRes = await fetch(`${WORKER_URL}/search`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
               apiKey: key,
               module: mod,
-              word:   target
+              word:   cleanTarget
             })
           });
           let searchData = await searchRes.json();
