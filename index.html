@@ -81,14 +81,127 @@
   .example-chip:hover{border-color:var(--accent);color:var(--accent2);}
 
   /* Divider + Input */
-  .chat-divider{height:1px;background:var(--border);}
-  .input-area{padding:11px 14px;display:flex;gap:9px;align-items:flex-end;}
-  textarea{flex:1;min-height:38px;max-height:110px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:300;line-height:1.5;outline:none;resize:none;transition:border-color .2s;}
-  textarea::placeholder{color:var(--muted);}
-  textarea:focus{border-color:var(--accent);}
-  .send-btn{width:38px;height:38px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
-  .send-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 10px rgba(232,103,58,.4);}
-  .send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .chat-divider { height: 1px; background: var(--border); }
+
+  .input-area {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--surface);
+  }
+
+  /* + button */
+  .plus-wrap { position: relative; flex-shrink: 0; }
+  .plus-btn {
+    width: 34px; height: 34px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text);
+    font-size: 22px; font-weight: 300; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .plus-btn:hover, .plus-btn.active {
+    border-color: var(--accent); color: var(--accent); transform: rotate(45deg);
+  }
+  .plus-menu {
+    position: absolute; bottom: 42px; left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 5px;
+    min-width: 140px; display: none; z-index: 100;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  }
+  .plus-menu.open { display: block; }
+  .plus-menu-item {
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--text); cursor: pointer; border-radius: 6px;
+    transition: background 0.15s;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+  }
+  .plus-menu-item:hover { background: var(--surface2); color: var(--accent2); }
+
+  /* Text input wrapper */
+  .input-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  textarea {
+    width: 100%;
+    min-height: 36px; max-height: 110px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 11px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    font-weight: 300; line-height: 1.5;
+    outline: none; resize: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  textarea::placeholder { color: var(--muted); }
+  textarea:focus { border-color: var(--accent); }
+
+  /* File indicator chip */
+  .file-indicator {
+    background: rgba(232,103,58,0.1);
+    border: 1px solid rgba(232,103,58,0.3);
+    border-radius: 6px; padding: 3px 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  }
+  .file-indicator span {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--accent2); overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; max-width: 220px;
+  }
+  .file-indicator button {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0;
+  }
+  .file-indicator button:hover { color: var(--error); }
+
+  /* Voice button */
+  .voice-btn {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--muted); font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .voice-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .voice-btn.listening {
+    border-color: var(--error); color: var(--error);
+    animation: voicePulse 1s infinite;
+  }
+  @keyframes voicePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(232,82,82,0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(232,82,82,0); }
+  }
+
+  /* Send button */
+  .send-btn {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: var(--accent); border: none;
+    border-radius: 7px; color: #fff; font-size: 15px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .send-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(232,103,58,.4); }
+  .send-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
   /* Status */
   .status-bar{margin-top:12px;display:flex;align-items:center;justify-content:space-between;animation:fadeUp .5s ease .2s both;}
@@ -146,19 +259,35 @@ I'll always ask for confirmation before making any changes, and I'll never affec
 
     <div class="chat-divider"></div>
 
-    <!-- File Upload Bar -->
-    <div class="upload-bar">
-      <input type="file" id="fileInput" onchange="onFileSelected(this)" style="display:none!important;" />
-      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-        📎 Attach File
-      </button>
-      <span class="upload-file-name" id="uploadFileName">No file selected</span>
-      <button class="upload-send-btn" id="uploadSendBtn" onclick="uploadFile()" style="display:none;">Upload ↑</button>
-    </div>
-
+    <!-- Input Area with + button and voice -->
     <div class="input-area">
-      <textarea id="userInput" placeholder="Ask anything about your CRM..." rows="1"
-        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <input type="file" id="fileInput" onchange="onFileSelected(this)" style="display:none!important;" />
+
+      <!-- + Button (like Claude/ChatGPT) -->
+      <div class="plus-wrap">
+        <button class="plus-btn" id="plusBtn" onclick="togglePlusMenu()" title="Attach file">+</button>
+        <div class="plus-menu" id="plusMenu">
+          <div class="plus-menu-item" onclick="document.getElementById('fileInput').click(); togglePlusMenu()">
+            📎 Attach File
+          </div>
+        </div>
+      </div>
+
+      <!-- Text area -->
+      <div class="input-wrap">
+        <textarea id="userInput" placeholder="Ask anything about your CRM..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <!-- File selected indicator -->
+        <div class="file-indicator" id="fileIndicator" style="display:none;">
+          <span id="fileIndicatorName"></span>
+          <button onclick="cancelFile()" title="Remove file">✕</button>
+        </div>
+      </div>
+
+      <!-- Voice button -->
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice input">🎤</button>
+
+      <!-- Send button -->
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
     </div>
   </div>
@@ -290,6 +419,12 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     if (!key)  { addMsg('agent', '⚠️ Please enter your Claude API key first.', 'error'); return; }
     if (!text) return;
 
+    // If file is selected, ask which record to attach to
+    if (selectedFile) {
+      await uploadFile();
+      return;
+    }
+
     // If we're waiting for clarification, treat as answer
     if (pendingTool?.type === 'input') { resolveInput(text); return; }
 
@@ -401,14 +536,34 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     return await res.json();
   }
 
+  // ── Plus menu ──────────────────────────────────────────────────────────────
+  function togglePlusMenu() {
+    const menu = document.getElementById('plusMenu');
+    const btn  = document.getElementById('plusBtn');
+    const open = menu.classList.toggle('open');
+    btn.classList.toggle('active', open);
+  }
+  // Close plus menu when clicking outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.plus-wrap')) {
+      document.getElementById('plusMenu')?.classList.remove('open');
+      document.getElementById('plusBtn')?.classList.remove('active');
+    }
+  });
+
   // ── File Upload ────────────────────────────────────────────────────────────
   let selectedFile = null;
 
   function onFileSelected(input) {
     selectedFile = input.files[0];
     if (!selectedFile) return;
-    document.getElementById('uploadFileName').textContent = selectedFile.name;
-    document.getElementById('uploadSendBtn').style.display = 'block';
+    const indicator = document.getElementById('fileIndicator');
+    document.getElementById('fileIndicatorName').textContent = '📎 ' + selectedFile.name;
+    indicator.style.display = 'flex';
+  }
+
+  function cancelFile() {
+    resetFileInput();
   }
 
   async function uploadFile() {
@@ -436,24 +591,110 @@ Or type a name and I'll search for it:`);
         // Direct module/id format
         [module, recordId] = target.split('/');
       } else {
-        // Search for the record first
+        // Smart search — try multiple strategies
         addMsg('agent', `🔍 Searching for "${target}"...`);
-        const searchRes = await post({
-          apiKey: key,
-          prompt: `Search for record named "${target}" in Leads or Contacts and give me just the module name and record ID`,
-          history: []
-        });
-        // Try to extract from response
-        const match = searchRes.response?.match(/ID[:\s]+(\d+)/i);
-        if (match) {
-          recordId = match[1];
-          module   = searchRes.response?.toLowerCase().includes('contact') ? 'Contacts' : 'Leads';
-        } else {
+
+        const modulesToSearch = ['Leads', 'Contacts', 'Deals', 'Accounts'];
+        let foundRecord = null;
+        let foundModule = null;
+
+        for (const mod of modulesToSearch) {
+          // Strategy 1: word search (full name)
+          let searchRes = await fetch(`${WORKER_URL}/search`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              apiKey: key,
+              module: mod,
+              word:   target
+            })
+          });
+          let searchData = await searchRes.json();
+
+          if (searchData.records && searchData.records.length > 0) {
+            foundRecord = searchData.records[0];
+            foundModule = mod;
+            break;
+          }
+
+          // Strategy 2: search by first name only
+          const parts = target.trim().split(' ');
+          if (parts.length > 1) {
+            searchRes = await fetch(`${WORKER_URL}/search`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                apiKey:    key,
+                module:    mod,
+                word:      parts[0] // first name only
+              })
+            });
+            searchData = await searchRes.json();
+
+            if (searchData.records && searchData.records.length > 0) {
+              // Find best match by checking full name
+              const bestMatch = searchData.records.find(r => {
+                const fullName = (r.Full_Name || r.Name || `${r.First_Name||''} ${r.Last_Name||''}`).toLowerCase();
+                return fullName.includes(target.toLowerCase()) ||
+                       target.toLowerCase().includes((r.Last_Name||'').toLowerCase());
+              });
+              if (bestMatch) {
+                foundRecord = bestMatch;
+                foundModule = mod;
+                break;
+              }
+            }
+
+            // Strategy 3: search by last name only
+            searchRes = await fetch(`${WORKER_URL}/search`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                apiKey: key,
+                module: mod,
+                word:   parts[parts.length - 1] // last name only
+              })
+            });
+            searchData = await searchRes.json();
+
+            if (searchData.records && searchData.records.length > 0) {
+              const bestMatch = searchData.records.find(r => {
+                const fullName = (r.Full_Name || r.Name || `${r.First_Name||''} ${r.Last_Name||''}`).toLowerCase();
+                return fullName.includes(target.toLowerCase()) ||
+                       target.toLowerCase().includes((r.First_Name||'').toLowerCase());
+              });
+              if (bestMatch) {
+                foundRecord = bestMatch;
+                foundModule = mod;
+                break;
+              }
+            }
+          }
+        }
+
+        if (!foundRecord) {
           removeThinking();
-          addMsg('agent', `❌ Could not find record "${target}". Please use format: ModuleName/RecordID e.g. Leads/429870000005648425`, 'error');
+          addMsg('agent',
+            `❌ Could not find any record matching "${target}".
+
+` +
+            `Try being more specific or use format:
+` +
+            `  Leads/RecordID
+` +
+            `  e.g. Leads/429870000005707001`,
+            'error'
+          );
+          resetFileInput();
           setEnabled(true);
           return;
         }
+
+        recordId = foundRecord.id;
+        module   = foundModule;
+        const name = foundRecord.Full_Name || foundRecord.Name ||
+                     `${foundRecord.First_Name||''} ${foundRecord.Last_Name||''}`.trim();
+        addMsg('agent', `✅ Found: ${name} in ${module} [ID: ${recordId}]`);
       }
 
       // Upload file to Worker
@@ -470,11 +711,7 @@ Or type a name and I'll search for it:`);
 
       if (data.success) {
         addMsg('agent', `✅ File "${selectedFile.name}" attached successfully to ${module} record!`, 'success');
-        // Reset file input
-        selectedFile = null;
-        document.getElementById('fileInput').value = '';
-        document.getElementById('uploadFileName').textContent = 'No file selected';
-        document.getElementById('uploadSendBtn').style.display = 'none';
+        resetFileInput();
       } else {
         addMsg('agent', `❌ Upload failed: ${data.error}`, 'error');
       }
@@ -485,6 +722,79 @@ Or type a name and I'll search for it:`);
     } finally {
       setEnabled(true);
     }
+  }
+
+  function resetFileInput() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileIndicator').style.display = 'none';
+    document.getElementById('fileIndicatorName').textContent = '';
+  }
+
+  // ── Voice Input ────────────────────────────────────────────────────────────
+  let recognition = null;
+  let isListening = false;
+
+  function toggleVoice() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      addMsg('agent', '⚠️ Voice input is not supported in this browser. Please use Chrome or Edge.', 'error');
+      return;
+    }
+
+    if (isListening) {
+      stopVoice();
+      return;
+    }
+
+    startVoice();
+  }
+
+  function startVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous    = false;
+    recognition.interimResults = true;
+    recognition.lang           = 'en-IN'; // Indian English
+
+    recognition.onstart = () => {
+      isListening = true;
+      document.getElementById('voiceBtn').classList.add('listening');
+      document.getElementById('voiceBtn').textContent = '⏹';
+      document.getElementById('userInput').placeholder = '🎤 Listening... speak now';
+    };
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      document.getElementById('userInput').value = transcript;
+      autoResize(document.getElementById('userInput'));
+    };
+
+    recognition.onend = () => {
+      stopVoice();
+      // Auto-send if we got text
+      const text = document.getElementById('userInput').value.trim();
+      if (text) sendMessage();
+    };
+
+    recognition.onerror = (event) => {
+      stopVoice();
+      if (event.error === 'not-allowed') {
+        addMsg('agent', '⚠️ Microphone access denied. Please allow microphone permission in your browser.', 'error');
+      }
+    };
+
+    recognition.start();
+  }
+
+  function stopVoice() {
+    if (recognition) recognition.stop();
+    isListening = false;
+    document.getElementById('voiceBtn').classList.remove('listening');
+    document.getElementById('voiceBtn').textContent = '🎤';
+    document.getElementById('userInput').placeholder = 'Ask anything about your CRM...';
   }
 
   // ── Clear chat ─────────────────────────────────────────────────────────────
