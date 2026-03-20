@@ -574,6 +574,9 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     const indicator = document.getElementById('fileIndicator');
     document.getElementById('fileIndicatorName').textContent = '📎 ' + selectedFile.name;
     indicator.style.display = 'flex';
+    // Hint user to type record name
+    document.getElementById('userInput').placeholder = 'Type record name to attach file to...';
+    document.getElementById('userInput').focus();
   }
 
   function cancelFile() {
@@ -585,165 +588,80 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     const key = apiKey();
     if (!key) { addMsg('agent', '⚠️ Please enter your Claude API key first.', 'error'); return; }
 
-    // Ask which record to attach to
-    const target = prompt(`Attach "${selectedFile.name}" to which record?
+    // Get record name from text input — no browser prompt needed
+    const typedText = document.getElementById('userInput').value.trim();
+    const target    = typedText || null;
 
-Enter: ModuleName/RecordID
-Example: Leads/429870000005648425
-
-Or type a name and I'll search for it:`);
-    if (!target) return;
+    if (!target) {
+      addMsg('agent', '⚠️ Please type the record name or ID in the text box first, then click send.', 'error');
+      return;
+    }
 
     setEnabled(false);
     addMsg('user', `📎 Uploading "${selectedFile.name}" to ${target}...`);
     addThinking();
 
     try {
-      let module, recordId;
-
-      // Clean up target input
       const cleanTarget = target.trim();
+      let module   = null;
+      let recordId = null;
 
+      // Case 1: Direct format "Leads/429870000005707001"
       if (cleanTarget.includes('/')) {
-        // Direct module/id format e.g. "Leads/429870000005707001"
         [module, recordId] = cleanTarget.split('/');
-      } else if (/^\d{15,}$/.test(cleanTarget)) {
-        // Just a numeric ID — search all modules to find which one it belongs to
-        addMsg('agent', `🔍 Looking up record ID ${cleanTarget}...`);
-        const modulesToTry = ['Leads', 'Contacts', 'Deals', 'Accounts', 'Tasks'];
-        let foundMod = null;
-        for (const mod of modulesToTry) {
-          try {
-            const r = await fetch(`${WORKER_URL}/search`, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ apiKey: key, module: mod, criteria: `(id:equals:${cleanTarget})` })
-            });
-            const d = await r.json();
-            if (d.records && d.records.length > 0) {
-              foundMod = mod;
-              recordId = cleanTarget;
-              module   = mod;
-              break;
-            }
-          } catch(e) { /* try next */ }
-        }
-        if (!foundMod) {
-          // Fallback — use Leads with the ID directly
-          module   = 'Leads';
-          recordId = cleanTarget;
-        }
-      } else {
-        // Smart search — try multiple strategies
-        addMsg('agent', `🔍 Searching for "${target}"...`);
+        module   = module.trim();
+        recordId = recordId.trim();
+        removeThinking();
+        showUploadConfirmCard(selectedFile.name, module, recordId, '', [recordId]);
+        setEnabled(true);
+        // Clear input
+        document.getElementById('userInput').value = '';
+        return;
+      }
 
-        const modulesToSearch = ['Leads', 'Contacts', 'Deals', 'Accounts'];
-        let foundRecord = null;
-        let foundModule = null;
+      // Case 2: Pure numeric ID
+      if (/^\d{15,}$/.test(cleanTarget)) {
+        module   = 'Leads';
+        recordId = cleanTarget;
+        removeThinking();
+        showUploadConfirmCard(selectedFile.name, module, recordId, '', [recordId]);
+        setEnabled(true);
+        document.getElementById('userInput').value = '';
+        return;
+      }
 
-        // Try both original and title-case versions
-        const titleCaseTarget = cleanTarget.replace(/\b\w/g, c => c.toUpperCase());
-        const searchTerms = [cleanTarget];
-        if (titleCaseTarget !== cleanTarget) searchTerms.push(titleCaseTarget);
+      // Case 3: Name search — use the same agent as chat
+      addMsg('agent', `🔍 Searching for "${cleanTarget}"...`);
 
-        for (const mod of modulesToSearch) {
-          // Strategy 1: word search — try each case variation
-          let searchRes = await fetch(`${WORKER_URL}/search`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              apiKey: key,
-              module: mod,
-              word:   cleanTarget
-            })
-          });
-          let searchData = await searchRes.json();
+      const searchResp = await post({
+        apiKey: key,
+        prompt: `Find a record named "${cleanTarget}" in Leads, Contacts, Deals or Accounts. Return the module name and record ID.`,
+        history: []
+      });
 
-          if (searchData.records && searchData.records.length > 0) {
-            foundRecord = searchData.records[0];
-            foundModule = mod;
-            break;
-          }
+      removeThinking();
 
-          // Strategy 2: search by first name only
-          const parts = target.trim().split(' ');
-          if (parts.length > 1) {
-            searchRes = await fetch(`${WORKER_URL}/search`, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                apiKey:    key,
-                module:    mod,
-                word:      parts[0] // first name only
-              })
-            });
-            searchData = await searchRes.json();
+      if (searchResp.response) {
+        const resp   = searchResp.response;
+        const allIds = [...resp.matchAll(/\b(\d{15,})\b/g)].map(m => m[1]);
+        const modMatch = resp.match(/\b(Leads|Contacts|Deals|Accounts|Tasks|Cases)\b/i);
+        const detectedModule = modMatch ? modMatch[1] : 'Leads';
 
-            if (searchData.records && searchData.records.length > 0) {
-              // Find best match by checking full name
-              const bestMatch = searchData.records.find(r => {
-                const fullName = (r.Full_Name || r.Name || `${r.First_Name||''} ${r.Last_Name||''}`).toLowerCase();
-                return fullName.includes(target.toLowerCase()) ||
-                       target.toLowerCase().includes((r.Last_Name||'').toLowerCase());
-              });
-              if (bestMatch) {
-                foundRecord = bestMatch;
-                foundModule = mod;
-                break;
-              }
-            }
-
-            // Strategy 3: search by last name only
-            searchRes = await fetch(`${WORKER_URL}/search`, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                apiKey: key,
-                module: mod,
-                word:   parts[parts.length - 1] // last name only
-              })
-            });
-            searchData = await searchRes.json();
-
-            if (searchData.records && searchData.records.length > 0) {
-              const bestMatch = searchData.records.find(r => {
-                const fullName = (r.Full_Name || r.Name || `${r.First_Name||''} ${r.Last_Name||''}`).toLowerCase();
-                return fullName.includes(target.toLowerCase()) ||
-                       target.toLowerCase().includes((r.First_Name||'').toLowerCase());
-              });
-              if (bestMatch) {
-                foundRecord = bestMatch;
-                foundModule = mod;
-                break;
-              }
-            }
-          }
-        }
-
-        if (!foundRecord) {
-          removeThinking();
-          addMsg('agent',
-            `❌ Could not find any record matching "${target}".
-
-` +
-            `Try being more specific or use format:
-` +
-            `  Leads/RecordID
-` +
-            `  e.g. Leads/429870000005707001`,
-            'error'
-          );
-          resetFileInput();
+        if (allIds.length >= 1) {
+          document.getElementById('userInput').value = '';
+          showUploadConfirmCard(selectedFile.name, detectedModule, allIds.length === 1 ? allIds[0] : null, resp, allIds);
           setEnabled(true);
           return;
         }
-
-        recordId = foundRecord.id;
-        module   = foundModule;
-        const name = foundRecord.Full_Name || foundRecord.Name ||
-                     `${foundRecord.First_Name||''} ${foundRecord.Last_Name||''}`.trim();
-        addMsg('agent', `✅ Found: ${name} in ${module} [ID: ${recordId}]`);
       }
+
+      // Not found
+      addMsg('agent',
+        `❌ Could not find "${cleanTarget}".\n\nTry:\n• Use exact name as in CRM\n• Use format: Leads/429870000005707001`,
+        'error'
+      );
+      resetFileInput();
+      setEnabled(true);
 
     } catch (err) {
       removeThinking();
@@ -751,6 +669,7 @@ Or type a name and I'll search for it:`);
       setEnabled(true);
     }
   }
+
 
   // ── Upload Confirmation Card (in-chat, no browser popups) ────────────────
   let pendingUpload = null; // stores file + module + recordId while waiting for confirm
@@ -848,6 +767,7 @@ Or type a name and I'll search for it:`);
     document.getElementById('fileInput').value = '';
     document.getElementById('fileIndicator').style.display = 'none';
     document.getElementById('fileIndicatorName').textContent = '';
+    document.getElementById('userInput').placeholder = 'Ask anything about your CRM...';
   }
 
   // ── Voice Input ────────────────────────────────────────────────────────────
