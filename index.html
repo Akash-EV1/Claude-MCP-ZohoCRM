@@ -7,13 +7,13 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
   :root {
-    --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a24; --border:#2a2a3a;
-    --accent:#e8673a; --accent2:#f0a070; --text:#f0ede8; --muted:#6b6880;
-    --success:#4caf82; --error:#e85252; --warning:#f0a030; --info:#4a9fd4;
+    --bg:#f5f6fa; --surface:#ffffff; --surface2:#f0f1f5; --border:#dde1ea;
+    --accent:#e8673a; --accent2:#c94e24; --text:#1a1d2e; --muted:#8a90a4;
+    --success:#2e9e68; --error:#d63c3c; --warning:#d4870a; --info:#2e7fc1;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-x:hidden;}
-  body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(232,103,58,.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(240,160,112,.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(232,103,58,.04) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(232,103,58,.02) 0%,transparent 50%);pointer-events:none;z-index:0;}
   .container{width:100%;max-width:760px;position:relative;z-index:1;padding-top:28px;}
 
   /* Header */
@@ -50,8 +50,8 @@
   .msg-bubble{max-width:86%;padding:9px 13px;border-radius:11px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
   .msg.agent .msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;}
   .msg.user  .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;}
-  .msg.error .msg-bubble{border-color:rgba(232,82,82,.35);color:#f0c0c0;}
-  .msg.blocked .msg-bubble{border-color:rgba(240,160,48,.35);color:#f0e0a0;}
+  .msg.error .msg-bubble{border-color:rgba(214,60,60,.35);color:#b02020;}
+  .msg.blocked .msg-bubble{border-color:rgba(212,135,10,.35);color:#8a5500;}
 
   /* Typing */
   .typing{display:flex;gap:3px;align-items:center;padding:3px 0;}
@@ -137,14 +137,25 @@ I'll always ask for confirmation before making any changes, and I'll never affec
 
     <div class="examples" id="exampleChips">
       <span class="example-chip" onclick="useExample(this)">How many leads do we have?</span>
-      <span class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, sarah@acme.com</span>
-      <span class="example-chip" onclick="useExample(this)">Update John Doe's email to john@gmail.com</span>
+      <span class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e2918390838aa283818f87cc818d8f">[email&#160;protected]</a></span>
+      <span class="example-chip" onclick="useExample(this)">Update John Doe's email to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a6ccc9cec8e6c1cbc7cfca88c5c9cb">[email&#160;protected]</a></span>
       <span class="example-chip" onclick="useExample(this)">Show all deals sorted by amount</span>
       <span class="example-chip" onclick="useExample(this)">Find leads with no email</span>
       <span class="example-chip" onclick="useExample(this)">What's our expected revenue this quarter?</span>
     </div>
 
     <div class="chat-divider"></div>
+
+    <!-- File Upload Bar -->
+    <div class="upload-bar">
+      <input type="file" id="fileInput" onchange="onFileSelected(this)" style="display:none!important;" />
+      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+        📎 Attach File
+      </button>
+      <span class="upload-file-name" id="uploadFileName">No file selected</span>
+      <button class="upload-send-btn" id="uploadSendBtn" onclick="uploadFile()" style="display:none;">Upload ↑</button>
+    </div>
+
     <div class="input-area">
       <textarea id="userInput" placeholder="Ask anything about your CRM..." rows="1"
         onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
@@ -165,7 +176,7 @@ I'll always ask for confirmation before making any changes, and I'll never affec
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const WORKER_URL = 'https://claude-proxy.akash-v.workers.dev';
 
   let history     = [];
@@ -390,16 +401,106 @@ I'll always ask for confirmation before making any changes, and I'll never affec
     return await res.json();
   }
 
+  // ── File Upload ────────────────────────────────────────────────────────────
+  let selectedFile = null;
+
+  function onFileSelected(input) {
+    selectedFile = input.files[0];
+    if (!selectedFile) return;
+    document.getElementById('uploadFileName').textContent = selectedFile.name;
+    document.getElementById('uploadSendBtn').style.display = 'block';
+  }
+
+  async function uploadFile() {
+    if (!selectedFile) return;
+    const key = apiKey();
+    if (!key) { addMsg('agent', '⚠️ Please enter your Claude API key first.', 'error'); return; }
+
+    // Ask which record to attach to
+    const target = prompt(`Attach "${selectedFile.name}" to which record?
+
+Enter: ModuleName/RecordID
+Example: Leads/429870000005648425
+
+Or type a name and I'll search for it:`);
+    if (!target) return;
+
+    setEnabled(false);
+    addMsg('user', `📎 Uploading "${selectedFile.name}" to ${target}...`);
+    addThinking();
+
+    try {
+      let module, recordId;
+
+      if (target.includes('/')) {
+        // Direct module/id format
+        [module, recordId] = target.split('/');
+      } else {
+        // Search for the record first
+        addMsg('agent', `🔍 Searching for "${target}"...`);
+        const searchRes = await post({
+          apiKey: key,
+          prompt: `Search for record named "${target}" in Leads or Contacts and give me just the module name and record ID`,
+          history: []
+        });
+        // Try to extract from response
+        const match = searchRes.response?.match(/ID[:\s]+(\d+)/i);
+        if (match) {
+          recordId = match[1];
+          module   = searchRes.response?.toLowerCase().includes('contact') ? 'Contacts' : 'Leads';
+        } else {
+          removeThinking();
+          addMsg('agent', `❌ Could not find record "${target}". Please use format: ModuleName/RecordID e.g. Leads/429870000005648425`, 'error');
+          setEnabled(true);
+          return;
+        }
+      }
+
+      // Upload file to Worker
+      const form = new FormData();
+      form.append('file',      selectedFile, selectedFile.name);
+      form.append('module',    module.trim());
+      form.append('record_id', recordId.trim());
+      form.append('api_key',   key);
+
+      const res  = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: form });
+      const data = await res.json();
+
+      removeThinking();
+
+      if (data.success) {
+        addMsg('agent', `✅ File "${selectedFile.name}" attached successfully to ${module} record!`, 'success');
+        // Reset file input
+        selectedFile = null;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('uploadFileName').textContent = 'No file selected';
+        document.getElementById('uploadSendBtn').style.display = 'none';
+      } else {
+        addMsg('agent', `❌ Upload failed: ${data.error}`, 'error');
+      }
+
+    } catch (err) {
+      removeThinking();
+      addMsg('agent', `❌ Upload error: ${err.message}`, 'error');
+    } finally {
+      setEnabled(true);
+    }
+  }
+
   // ── Clear chat ─────────────────────────────────────────────────────────────
   function clearChat() {
     history = []; pendingTool = null; sessionCalls = 0;
-    document.getElementById('apiCount').textContent = '';
+    document.getElementById('apiCount').textCo
     document.getElementById('messages').innerHTML = `
       <div class="msg agent">
         <div class="msg-avatar">⚡</div>
         <div class="msg-bubble">Chat cleared! How can I help you with your Zoho CRM?</div>
       </div>`;
     document.getElementById('exampleChips').style.display = 'flex';
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('uploadFileName').textContent = 'No file selected';
+    document.getElementById('uploadSendBtn').style.display = 'none';
   }
 </script>
 </body>
