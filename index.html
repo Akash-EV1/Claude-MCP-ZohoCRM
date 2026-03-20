@@ -186,6 +186,20 @@
     border-color: var(--error); color: var(--error);
     animation: voicePulse 1s infinite;
   }
+  /* Upload confirmation card */
+  .upload-confirm-card { margin: 4px 0 0 35px; background: rgba(74,159,212,0.06); border: 1px solid rgba(74,159,212,0.25); border-radius: 10px; padding: 12px 14px; animation: fadeUp 0.3s ease both; }
+  .upload-confirm-title { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--info); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+  .upload-confirm-summary { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); margin-bottom: 10px; line-height: 1.6; }
+  .upload-option-list { margin-bottom: 10px; }
+  .upload-option { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 5px; cursor: pointer; transition: all 0.2s; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text); }
+  .upload-option:hover { border-color: var(--accent); color: var(--accent2); background: rgba(232,103,58,0.06); }
+  .upload-option .opt-num { width: 20px; height: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .upload-confirm-btns { display: flex; gap: 8px; }
+  .btn-attach { background: var(--info); border: none; border-radius: 7px; padding: 7px 16px; color: #fff; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-attach:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,159,212,0.3); }
+  .btn-attach-cancel { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 7px 16px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-attach-cancel:hover { border-color: var(--error); color: var(--error); }
+
   @keyframes voicePulse {
     0%,100% { box-shadow: 0 0 0 0 rgba(232,82,82,0.4); }
     50%      { box-shadow: 0 0 0 6px rgba(232,82,82,0); }
@@ -731,16 +745,80 @@ Or type a name and I'll search for it:`);
         addMsg('agent', `✅ Found: ${name} in ${module} [ID: ${recordId}]`);
       }
 
-      // Upload file to Worker
+    } catch (err) {
+      removeThinking();
+      addMsg('agent', `❌ Upload error: ${err.message}`, 'error');
+      setEnabled(true);
+    }
+  }
+
+  // ── Upload Confirmation Card (in-chat, no browser popups) ────────────────
+  let pendingUpload = null; // stores file + module + recordId while waiting for confirm
+
+  function showUploadConfirmCard(fileName, module, singleId, respText, allIds) {
+    const msgs = document.getElementById('messages');
+    const card = document.createElement('div');
+    card.className = 'upload-confirm-card';
+    card.id = 'uploadConfirmCard';
+
+    if (singleId) {
+      // Single record — confirm/cancel
+      card.innerHTML = `
+        <div class="upload-confirm-title">📎 Confirm File Attachment</div>
+        <div class="upload-confirm-summary">
+          Attach <strong>"${esc(fileName)}"</strong> to this record?<br>
+          Module: <strong>${esc(module)}</strong> &nbsp;|&nbsp; ID: <strong>${singleId}</strong>
+        </div>
+        <div class="upload-confirm-btns">
+          <button class="btn-attach" onclick="executeUpload('${module}','${singleId}')">📎 Yes, Attach</button>
+          <button class="btn-attach-cancel" onclick="cancelUploadConfirm()">✖ Cancel</button>
+        </div>`;
+      pendingUpload = { fileName, module, recordId: singleId };
+    } else {
+      // Multiple records — show options
+      let optionsHtml = '';
+      allIds.forEach((id, i) => {
+        // Try to extract name from response text near this ID
+        const idx   = respText.indexOf(id);
+        const chunk = respText.substring(Math.max(0, idx - 60), idx + id.length + 10);
+        const nameMatch = chunk.match(/([A-Z][a-zA-Z .]+)\s*[\[|]/);
+        const name = nameMatch ? nameMatch[1].trim() : `Record ${i+1}`;
+        optionsHtml += `<div class="upload-option" onclick="executeUpload('${module}','${id}')">
+          <span class="opt-num">${i+1}</span>
+          <span>${esc(name)} &nbsp;<span style="opacity:0.5;font-size:10px">[${id}]</span></span>
+        </div>`;
+      });
+
+      card.innerHTML = `
+        <div class="upload-confirm-title">📎 Multiple Records Found — Pick One</div>
+        <div class="upload-confirm-summary">Which record should <strong>"${esc(fileName)}"</strong> be attached to?</div>
+        <div class="upload-option-list">${optionsHtml}</div>
+        <button class="btn-attach-cancel" onclick="cancelUploadConfirm()">✖ Cancel</button>`;
+      pendingUpload = { fileName, module, recordId: null };
+    }
+
+    msgs.appendChild(card);
+    scrollBottom();
+  }
+
+  async function executeUpload(module, recordId) {
+    document.getElementById('uploadConfirmCard')?.remove();
+    if (!selectedFile) return;
+
+    addMsg('agent', `📎 Attaching "${selectedFile.name}" to ${module} [ID: ${recordId}]...`);
+    setEnabled(false);
+    addThinking();
+
+    try {
+      const key  = apiKey();
       const form = new FormData();
       form.append('file',      selectedFile, selectedFile.name);
-      form.append('module',    module.trim());
-      form.append('record_id', recordId.trim());
+      form.append('module',    module);
+      form.append('record_id', recordId);
       form.append('api_key',   key);
 
       const res  = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: form });
       const data = await res.json();
-
       removeThinking();
 
       if (data.success) {
@@ -749,13 +827,20 @@ Or type a name and I'll search for it:`);
       } else {
         addMsg('agent', `❌ Upload failed: ${data.error}`, 'error');
       }
-
     } catch (err) {
       removeThinking();
       addMsg('agent', `❌ Upload error: ${err.message}`, 'error');
     } finally {
       setEnabled(true);
+      pendingUpload = null;
     }
+  }
+
+  function cancelUploadConfirm() {
+    document.getElementById('uploadConfirmCard')?.remove();
+    addMsg('agent', '↩️ File attachment cancelled.');
+    resetFileInput();
+    pendingUpload = null;
   }
 
   function resetFileInput() {
