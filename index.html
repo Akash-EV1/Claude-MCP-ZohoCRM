@@ -6,764 +6,480 @@
 <title>Zoho AI Agent</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap');
-
   :root {
-    --bg:       #f5f4f1;
-    --surface:  #ffffff;
-    --border:   #e8e6e1;
-    --border2:  #d4d0c8;
-    --accent:   #d4502a;
-    --accent2:  #e8794a;
-    --text:     #1a1916;
-    --muted:    #888580;
-    --muted2:   #b8b4ac;
-    --success:  #2d7a4f;
-    --error:    #c0392b;
-    --warning:  #b8740a;
-    --user-bg:  #1a1916;
-    --user-txt: #f5f4f1;
-    --agent-bg: #ffffff;
+    --bg:#f5f4f1; --surface:#fff; --border:#e8e6e1; --border2:#d4d0c8;
+    --accent:#d4502a; --accent2:#e8794a; --text:#1a1916; --muted:#888580; --muted2:#b8b4ac;
+    --success:#2d7a4f; --error:#c0392b; --warning:#b8740a;
+    --user-bg:#1a1916; --user-txt:#f5f4f1;
   }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;}
 
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { height:100%; overflow:hidden; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ── Top bar ── */
-  .topbar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    gap: 10px;
-  }
-
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-
-  .logo {
-    width: 28px; height: 28px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
-  }
-
-  .brand-name {
-    font-size: 13px; font-weight: 600;
-    color: var(--text); letter-spacing: -0.01em;
-  }
-
-  .brand-sub {
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-  }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .api-key-wrap { position: relative; }
-
-  .api-key-input {
-    width: 210px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 28px 6px 10px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    outline: none;
-    transition: border-color .2s;
-  }
-
-  .api-key-input:focus { border-color: var(--accent); }
-  .api-key-input::placeholder { color: var(--muted2); }
-
-  .toggle-key {
-    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: var(--muted);
-    cursor: pointer; font-size: 12px; transition: color .2s;
-  }
-  .toggle-key:hover { color: var(--accent); }
-
-  .status-pill {
-    display: flex; align-items: center; gap: 5px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 20px; padding: 4px 10px;
-    font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted);
-  }
-
-  .status-dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--success); box-shadow: 0 0 4px var(--success);
-    animation: pulse 2s infinite;
-  }
-
-  .clear-btn {
-    background: none; border: 1px solid var(--border); border-radius: 6px;
-    padding: 5px 10px; font-family: 'DM Sans', sans-serif;
-    font-size: 11px; color: var(--muted); cursor: pointer; transition: all .2s;
-  }
-  .clear-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ── Messages ── */
-  .messages-wrap {
-    flex: 1; overflow-y: auto; padding: 20px 0; scroll-behavior: smooth;
-  }
-  .messages-wrap::-webkit-scrollbar { width: 4px; }
-  .messages-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-  .messages-inner {
-    max-width: 700px; margin: 0 auto;
-    padding: 0 18px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-
-  /* Welcome */
-  .welcome {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 36px 20px 16px;
-    text-align: center; gap: 6px;
-  }
-
-  .welcome-icon {
-    width: 40px; height: 40px; background: var(--accent); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; margin-bottom: 8px;
-  }
-
-  .welcome h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
-
-  .welcome p { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 360px; }
-
-  .example-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 7px; margin-top: 14px; width: 100%; max-width: 480px;
-  }
-
-  .example-chip {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 9px 12px;
-    font-size: 11px; font-family: 'DM Mono', monospace;
-    color: var(--muted); cursor: pointer; transition: all .2s; text-align: left; line-height: 1.4;
-  }
-  .example-chip:hover { border-color: var(--accent); color: var(--accent); background: #fff8f6; }
+  /* Top bar */
+  .topbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--surface);gap:10px;}
+  .tl{display:flex;align-items:center;gap:10px;}
+  .logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .brand-name{font-size:13px;font-weight:600;color:var(--text);}
+  .brand-sub{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+  .tr{display:flex;align-items:center;gap:8px;}
+  .ak-wrap{position:relative;}
+  .ak-input{width:210px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 28px 6px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;transition:border-color .2s;}
+  .ak-input:focus{border-color:var(--accent);}
+  .ak-input::placeholder{color:var(--muted2);}
+  .ak-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;}
+  .status-pill{display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+  .sdot{width:5px;height:5px;border-radius:50%;background:var(--success);box-shadow:0 0 4px var(--success);animation:pulse 2s infinite;}
+  .clear-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;}
+  .clear-btn:hover{border-color:var(--accent);color:var(--accent);}
 
   /* Messages */
-  .msg { display: flex; gap: 9px; animation: slideUp .2s ease both; }
-  .msg.user { flex-direction: row-reverse; }
+  .msgs-wrap{flex:1;overflow-y:auto;padding:20px 0;}
+  .msgs-wrap::-webkit-scrollbar{width:4px;}
+  .msgs-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+  .msgs-inner{max-width:700px;margin:0 auto;padding:0 18px;display:flex;flex-direction:column;gap:12px;}
 
-  .msg-avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; flex-shrink: 0; margin-top: 2px;
-  }
-  .msg.agent .msg-avatar { background: var(--accent); color: white; font-size: 12px; }
-  .msg.user  .msg-avatar { background: var(--user-bg); color: var(--user-txt); }
+  /* Welcome */
+  .welcome{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 20px 20px;gap:6px;}
+  .wicon{width:42px;height:42px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;}
+  .welcome h2{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+  .welcome p{font-size:13px;color:var(--muted);line-height:1.5;max-width:360px;}
+  .eg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px;width:100%;max-width:480px;}
+  .ec{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);cursor:pointer;transition:all .2s;text-align:left;line-height:1.4;}
+  .ec:hover{border-color:var(--accent);color:var(--accent);background:#fff8f6;}
 
-  .msg-bubble {
-    max-width: 82%; padding: 10px 14px; border-radius: 12px;
-    font-size: 13px; line-height: 1.65;
-    white-space: pre-wrap; word-break: break-word;
-  }
-  .msg.agent .msg-bubble {
-    background: var(--agent-bg); border: 1px solid var(--border);
-    color: var(--text); border-bottom-left-radius: 3px;
-    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 300;
-  }
-  .msg.user .msg-bubble {
-    background: var(--user-bg); color: var(--user-txt);
-    border-bottom-right-radius: 3px;
-  }
-  .msg.error   .msg-bubble { border-color: rgba(192,57,43,.3); background: #fff8f7; color: var(--error); }
-  .msg.blocked .msg-bubble { border-color: rgba(184,116,10,.3); background: #fffbf5; color: var(--warning); }
-
-  /* File message */
-  .msg-file {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px; padding: 7px 10px; margin-bottom: 6px;
-    font-size: 11px;
-  }
+  /* Msgs */
+  .msg{display:flex;gap:9px;animation:slideUp .2s ease both;}
+  .msg.user{flex-direction:row-reverse;}
+  .av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;}
+  .msg.agent .av{background:var(--accent);color:#fff;font-size:12px;}
+  .msg.user  .av{background:var(--user-bg);color:var(--user-txt);}
+  .bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+  .msg.agent .bbl{background:var(--surface);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;font-family:'DM Mono',monospace;font-size:12px;font-weight:300;}
+  .msg.user  .bbl{background:var(--user-bg);color:var(--user-txt);border-bottom-right-radius:3px;}
+  .msg.error   .bbl{border-color:rgba(192,57,43,.3);background:#fff8f7;color:var(--error);}
+  .msg.blocked .bbl{border-color:rgba(184,116,10,.3);background:#fffbf5;color:var(--warning);}
 
   /* Typing */
-  .typing { display: flex; gap: 3px; align-items: center; padding: 2px 0; }
-  .typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--muted2); animation: bounce 1.2s infinite; }
-  .typing span:nth-child(2) { animation-delay: .2s; }
-  .typing span:nth-child(3) { animation-delay: .4s; }
+  .typing{display:flex;gap:3px;align-items:center;padding:2px 0;}
+  .typing span{width:5px;height:5px;border-radius:50%;background:var(--muted2);animation:bounce 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
 
-  /* Confirm card */
-  .confirm-card {
-    margin-left: 35px; background: var(--surface);
-    border: 1px solid #f0c8a0; border-left: 3px solid var(--warning);
-    border-radius: 8px; padding: 14px 16px;
-    animation: slideUp .2s ease both;
-  }
-  .confirm-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--warning); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
-  .confirm-summary { font-size: 13px; color: var(--text); margin-bottom: 6px; line-height: 1.5; }
-  .confirm-count { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); margin-bottom: 10px; }
-  .confirm-count strong { color: var(--warning); }
-  .confirm-details { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 10px; white-space: pre-wrap; }
-  .confirm-btns { display: flex; gap: 8px; }
-  .btn-yes { background: var(--success); border: none; border-radius: 6px; padding: 7px 16px; color: white; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all .2s; }
-  .btn-yes:hover { opacity: .85; transform: translateY(-1px); }
-  .btn-no { background: none; border: 1px solid var(--border2); border-radius: 6px; padding: 7px 16px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all .2s; }
-  .btn-no:hover { border-color: var(--error); color: var(--error); }
+  /* Confirm */
+  .confirm-card{margin-left:35px;background:var(--surface);border:1px solid #f0c8a0;border-left:3px solid var(--warning);border-radius:8px;padding:14px 16px;animation:slideUp .2s ease both;}
+  .clabel{font-size:10px;font-family:'DM Mono',monospace;color:var(--warning);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+  .csummary{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.5;}
+  .ccount{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:10px;}
+  .ccount strong{color:var(--warning);}
+  .cdetails{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap;}
+  .cbtns{display:flex;gap:8px;}
+  .btn-yes{background:var(--success);border:none;border-radius:6px;padding:7px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}
+  .btn-yes:hover{opacity:.85;}
+  .btn-no{background:none;border:1px solid var(--border2);border-radius:6px;padding:7px 16px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+  .btn-no:hover{border-color:var(--error);color:var(--error);}
 
   /* Clarify */
-  .clarify-opts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-  .clarify-opt { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 4px 10px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); cursor: pointer; transition: all .2s; }
-  .clarify-opt:hover { border-color: var(--accent); color: var(--accent); }
+  .copts{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .copt{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);cursor:pointer;transition:all .2s;}
+  .copt:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* ── Input bar ── */
-  .input-bar {
-    flex-shrink: 0;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    padding: 10px 16px;
-  }
+  /* Input bar */
+  .input-bar{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);padding:10px 16px;}
+  .input-inner{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
+  .file-prev{display:none;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);}
+  .file-prev.show{display:flex;}
+  .fpname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fpx{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;transition:color .2s;}
+  .fpx:hover{color:var(--error);}
+  .voice-hint{font-size:10px;font-family:'DM Mono',monospace;color:var(--accent);text-align:center;display:none;}
+  .irow{display:flex;gap:8px;align-items:flex-end;}
+  .iactions{display:flex;gap:5px;}
+  .ibtn{width:36px;height:36px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:all .2s;}
+  .iBtn:hover,.iBtn:focus{outline:none;}
+  .ibtn:hover{border-color:var(--accent);color:var(--accent);}
+  .ibtn.rec{background:#fff0ee;border-color:var(--accent);color:var(--accent);animation:recPulse 1s infinite;}
+  #fileInput{display:none;}
+  .itxt{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;outline:none;resize:none;min-height:36px;max-height:110px;transition:border-color .2s;}
+  .itxt:focus{border-color:var(--accent);}
+  .itxt::placeholder{color:var(--muted2);}
+  .sbtn{width:38px;height:38px;min-width:38px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+  .sbtn:hover:not(:disabled){background:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(212,80,42,.35);}
+  .sbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
-  .input-inner {
-    max-width: 700px; margin: 0 auto;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-
-  /* File preview */
-  .file-preview {
-    display: none;
-    align-items: center; gap: 8px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; padding: 6px 10px;
-    font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted);
-  }
-  .file-preview.visible { display: flex; }
-  .file-preview-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .file-remove { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 14px; padding: 0; transition: color .2s; }
-  .file-remove:hover { color: var(--error); }
-
-  /* Input row */
-  .input-row { display: flex; gap: 8px; align-items: flex-end; }
-
-  /* Left buttons */
-  .input-actions { display: flex; gap: 5px; }
-
-  .action-btn {
-    width: 36px; height: 36px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--muted);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 15px; flex-shrink: 0;
-    transition: all .2s;
-  }
-  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .action-btn.recording { background: #fff0ee; border-color: var(--accent); color: var(--accent); animation: recordPulse 1s infinite; }
-
-  /* Hidden file input */
-  #fileInput { display: none; }
-
-  textarea {
-    flex: 1; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; padding: 9px 13px;
-    color: var(--text); font-family: 'DM Sans', sans-serif;
-    font-size: 13px; line-height: 1.5; outline: none;
-    resize: none; min-height: 36px; max-height: 110px;
-    transition: border-color .2s;
-  }
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--muted2); }
-
-  .send-btn {
-    width: 36px; height: 36px;
-    background: var(--accent); border: none;
-    border-radius: 7px; color: white; font-size: 14px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: all .2s;
-  }
-  .send-btn:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
-  .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-
-  /* Voice hint */
-  .voice-hint {
-    font-size: 10px; font-family: 'DM Mono', monospace;
-    color: var(--accent); text-align: center;
-    animation: fadeIn .3s ease;
-  }
-
-  @keyframes slideUp   { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
-  @keyframes fadeIn    { from { opacity:0 } to { opacity:1 } }
-  @keyframes bounce    { 0%,80%,100% { transform:scale(0) } 40% { transform:scale(1) } }
-  @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:.4 } }
-  @keyframes recordPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(212,80,42,.4) } 50% { box-shadow: 0 0 0 5px rgba(212,80,42,0) } }
+  @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,80,42,.4)}50%{box-shadow:0 0 0 5px rgba(212,80,42,0)}}
 </style>
 </head>
 <body>
 
-<!-- Top bar -->
 <div class="topbar">
-  <div class="topbar-left">
+  <div class="tl">
     <div class="logo">⚡</div>
     <div>
       <div class="brand-name">Zoho AI Agent</div>
       <div class="brand-sub">ask anything → zoho acts</div>
     </div>
   </div>
-  <div class="topbar-right">
-    <div class="api-key-wrap">
-      <input type="password" class="api-key-input" id="apiKey" placeholder="Claude API key  sk-ant-..." />
-      <button class="toggle-key" onclick="toggleKey()">👁</button>
+  <div class="tr">
+    <div class="ak-wrap">
+      <input type="password" class="ak-input" id="apiKey" placeholder="Claude API key  sk-ant-..." />
+      <button class="ak-eye" id="eyeBtn">👁</button>
     </div>
-    <div class="status-pill">
-      <div class="status-dot"></div>
-      Zoho Connected
-    </div>
-    <button class="clear-btn" onclick="clearChat()">Clear</button>
+    <div class="status-pill"><div class="sdot"></div>Zoho Connected</div>
+    <button class="clear-btn" id="clearBtn">Clear</button>
   </div>
 </div>
 
-<!-- Messages -->
-<div class="messages-wrap" id="messagesWrap">
-  <div class="messages-inner" id="messages">
+<div class="msgs-wrap" id="msgsWrap">
+  <div class="msgs-inner" id="msgs">
     <div class="welcome" id="welcome">
-      <div class="welcome-icon">⚡</div>
+      <div class="wicon">⚡</div>
       <h2>What can I help you with?</h2>
       <p>Ask anything about your Zoho CRM. I'll confirm before making any changes and never affect more than 50 records at once.</p>
-      <div class="example-grid">
-        <div class="example-chip" onclick="useExample(this)">How many leads do we have?</div>
-        <div class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, sarah@acme.com</div>
-        <div class="example-chip" onclick="useExample(this)">Update John Doe's email to john@gmail.com</div>
-        <div class="example-chip" onclick="useExample(this)">Show all deals sorted by amount</div>
-        <div class="example-chip" onclick="useExample(this)">Find leads with no email</div>
-        <div class="example-chip" onclick="useExample(this)">Expected revenue this quarter?</div>
+      <div class="eg">
+        <div class="ec">How many leads do we have?</div>
+        <div class="ec">Create lead: Sarah Johnson, sarah@acme.com</div>
+        <div class="ec">Update John Doe's email to john@gmail.com</div>
+        <div class="ec">Show all deals sorted by amount</div>
+        <div class="ec">Find leads with no email</div>
+        <div class="ec">Expected revenue this quarter?</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Input bar -->
 <div class="input-bar">
   <div class="input-inner">
-
-    <!-- File preview strip -->
-    <div class="file-preview" id="filePreview">
+    <div class="file-prev" id="filePrev">
       <span>📎</span>
-      <span class="file-preview-name" id="filePreviewName"></span>
-      <button class="file-remove" onclick="removeFile()" title="Remove file">✕</button>
+      <span class="fpname" id="fpName"></span>
+      <button class="fpx" id="fpxBtn">✕</button>
     </div>
-
-    <!-- Voice hint -->
-    <div class="voice-hint" id="voiceHint" style="display:none">🎤 Listening... speak now</div>
-
-    <!-- Input row -->
-    <div class="input-row">
-      <div class="input-actions">
-        <!-- File upload -->
-        <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Attach file">📎</button>
-        <input type="file" id="fileInput" onchange="handleFileSelect(event)" accept="*/*" />
-        <!-- Voice -->
-        <button class="action-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice input">🎤</button>
+    <div class="voice-hint" id="vHint">🎤 Listening... speak freely, press ➤ when done</div>
+    <div class="irow">
+      <div class="iactions">
+        <button class="iBtn" id="fileBtn" title="Attach file">📎</button>
+        <input type="file" id="fileInput" />
+        <button class="iBtn" id="voiceBtn" title="Voice input">🎤</button>
       </div>
-
-      <textarea
-        id="userInput"
-        placeholder="Ask anything, or attach a file..."
-        rows="1"
-        onkeydown="handleKey(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">➤</button>
+      <textarea class="itxt" id="txt" placeholder="Ask anything, or attach a file..." rows="1"></textarea>
+      <button class="sbtn" id="sendBtn">➤</button>
     </div>
-
   </div>
 </div>
 
 <script>
-  const WORKER_URL = 'https://claude-proxy.akash-v.workers.dev';
+const WORKER = 'https://claude-proxy.akash-v.workers.dev';
+let history=[], pendingTool=null, isThinking=false, firstMsg=true;
+let attachedFile=null, recognition=null, isRec=false;
 
-  let history      = [];
-  let pendingTool  = null;
-  let isThinking   = false;
-  let firstMessage = true;
-  let attachedFile = null;  // { name, base64, type }
-  let recognition  = null;
-  let isRecording  = false;
+// ── Simple direct element references ────────────────────────────────────────
+const $ = id => document.getElementById(id);
 
-  // ── API Key ──────────────────────────────────────────────────────────────
-  function toggleKey() {
-    const i = document.getElementById('apiKey');
-    i.type = i.type === 'password' ? 'text' : 'password';
-  }
+// ── Top bar ──────────────────────────────────────────────────────────────────
+$('eyeBtn').onclick = () => {
+  const k = $('apiKey');
+  k.type = k.type==='password' ? 'text' : 'password';
+};
 
-  // ── Example chips ────────────────────────────────────────────────────────
-  function useExample(el) {
-    const ta = document.getElementById('userInput');
-    ta.value = el.textContent;
+$('clearBtn').onclick = clearChat;
+
+// ── File attach ──────────────────────────────────────────────────────────────
+$('fileBtn').onclick = () => $('fileInput').click();
+
+$('fileInput').onchange = function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    attachedFile = { name: f.name, base64: ev.target.result.split(',')[1], type: f.type };
+    $('fpName').textContent = f.name;
+    $('filePrev').classList.add('show');
+    const ta = $('txt');
+    if (!ta.value.trim()) { ta.value = `Attach "${f.name}" to a record`; resize(ta); }
     ta.focus();
-    autoResize(ta);
-  }
+  };
+  reader.readAsDataURL(f);
+  this.value = '';
+};
 
-  // ── Auto resize textarea ─────────────────────────────────────────────────
-  function autoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
-  }
+$('fpxBtn').onclick = () => {
+  attachedFile = null;
+  $('filePrev').classList.remove('show');
+  $('fpName').textContent = '';
+};
 
-  // ── Keyboard handler ─────────────────────────────────────────────────────
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (pendingTool?.type === 'input') {
-        resolveInput(document.getElementById('userInput').value.trim());
-      } else {
-        sendMessage();
-      }
+// ── Voice ────────────────────────────────────────────────────────────────────
+$('voiceBtn').onclick = () => {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    addMsg('agent','⚠ Voice not supported in this browser. Please use Chrome.','error');
+    return;
+  }
+  isRec ? stopVoice() : startVoice();
+};
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-IN';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  let final = '';
+
+  recognition.onstart = () => {
+    isRec = true;
+    $('voiceBtn').classList.add('rec');
+    $('vHint').style.display = 'block';
+    $('txt').value = '';
+    resize($('txt'));
+  };
+
+  recognition.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t + ' ';
+      else interim += t;
     }
+    $('txt').value = (final + interim).trim();
+    resize($('txt'));
+  };
+
+  recognition.onerror = e => {
+    if (e.error==='no-speech'||e.error==='aborted') return;
+    stopVoice();
+    addMsg('agent',`⚠ Voice error: ${e.error}`,'error');
+  };
+
+  recognition.onend = () => { if (isRec) { try { recognition.start(); } catch(e){} } };
+  recognition.start();
+}
+
+function stopVoice() {
+  isRec = false;
+  $('voiceBtn').classList.remove('rec');
+  $('vHint').style.display = 'none';
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+}
+
+// ── Textarea ─────────────────────────────────────────────────────────────────
+function resize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+}
+
+$('txt').oninput = function() { resize(this); };
+$('txt').onkeydown = function(e) {
+  if (e.key==='Enter' && !e.shiftKey) {
+    e.preventDefault();
+    pendingTool?.type==='input' ? resolveInput(this.value.trim()) : send();
+  }
+};
+
+// ── Send ─────────────────────────────────────────────────────────────────────
+$('sendBtn').onclick = () => {
+  if (pendingTool?.type==='input') { resolveInput($('txt').value.trim()); }
+  else { send(); }
+};
+
+async function send() {
+  if (isThinking) return;
+  if (isRec) stopVoice();
+  const key  = $('apiKey').value.trim();
+  const text = $('txt').value.trim();
+  if (!key)  { addMsg('agent','⚠ Please enter your Claude API key in the top bar.','error'); return; }
+  if (!text && !attachedFile) return;
+
+  let displayHtml = attachedFile ? `<div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 8px;margin-bottom:5px;font-size:11px;">📎 ${esc(attachedFile.name)}</div>` : '';
+  if (text) displayHtml += esc(text);
+  addMsg('user', displayHtml || `📎 ${esc(attachedFile?.name)}`);
+
+  let prompt = text || `Process attached file: ${attachedFile?.name}`;
+  if (attachedFile && text) prompt = `${text}\n\n[Attached file: ${attachedFile.name}]`;
+
+  const fileToSend = attachedFile;
+  $('fpxBtn').onclick();  // clear file
+  $('txt').value = ''; $('txt').style.height = 'auto';
+  disable(true); think();
+
+  try {
+    const payload = { apiKey: key, prompt, history };
+    if (fileToSend) payload.attachment = { name: fileToSend.name, base64: fileToSend.base64, type: fileToSend.type };
+    handleResp(await post(payload));
+  } catch(e) {
+    unthink();
+    addMsg('agent',`Network error: ${e.message}`,'error');
+    disable(false);
+  }
+}
+
+// ── Confirm/cancel ────────────────────────────────────────────────────────────
+function resolveConfirm(yes) {
+  if (!pendingTool) return;
+  $('confirmCard')?.remove();
+  const { tool_id, pending_tool_input } = pendingTool;
+  pendingTool = null;
+  addMsg('user', yes ? '✓ Yes, proceed' : '✕ Cancel');
+  disable(true); think();
+  post({ apiKey: $('apiKey').value.trim(), confirmed: yes, tool_id, pending_tool_input, history })
+    .then(handleResp).catch(e => { unthink(); addMsg('agent',`Network error: ${e.message}`,'error'); disable(false); });
+}
+
+// ── Clarify ───────────────────────────────────────────────────────────────────
+async function resolveInput(answer) {
+  if (!answer || !pendingTool) return;
+  const { tool_id } = pendingTool;
+  pendingTool = null;
+  addMsg('user', esc(answer));
+  $('txt').value = ''; $('txt').style.height = 'auto';
+  disable(true); think();
+  try {
+    handleResp(await post({ apiKey: $('apiKey').value.trim(), user_answer: answer, tool_id, history }));
+  } catch(e) {
+    unthink();
+    addMsg('agent',`Network error: ${e.message}`,'error');
+    disable(false);
+  }
+}
+
+// ── Handle response ───────────────────────────────────────────────────────────
+function handleResp(data) {
+  if (data.history) history = data.history;
+  unthink();
+
+  if (data.error) { addMsg('agent',`❌ ${esc(data.error)}`,'error'); disable(false); return; }
+
+  if (data.needs_confirmation) {
+    if (data.response) addMsg('agent', esc(data.response));
+    showConfirm(data.confirmation, data.tool_id, data.pending_tool_input);
+    disable(false); return;
   }
 
-  // ── FILE UPLOAD ──────────────────────────────────────────────────────────
-  function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result.split(',')[1];
-      attachedFile = { name: file.name, base64, type: file.type };
-      document.getElementById('filePreviewName').textContent = file.name;
-      document.getElementById('filePreview').classList.add('visible');
-      // Pre-fill prompt if empty
-      const ta = document.getElementById('userInput');
-      if (!ta.value.trim()) {
-        ta.value = `Attach "${file.name}" to a record`;
-        autoResize(ta);
-      }
-      ta.focus();
-    };
-    reader.readAsDataURL(file);
-    event.target.value = ''; // Reset input
+  if (data.needs_input) {
+    showClarify(data.question, data.options, data.tool_id);
+    disable(false); return;
   }
 
-  function removeFile() {
-    attachedFile = null;
-    document.getElementById('filePreview').classList.remove('visible');
-    document.getElementById('filePreviewName').textContent = '';
+  if (data.response) {
+    addMsg('agent', esc(data.response), data.response.includes('⚠') ? 'blocked' : '');
   }
+  disable(false);
+}
 
-  // ── VOICE INPUT ──────────────────────────────────────────────────────────
-  function toggleVoice() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      addMsg('agent', '⚠ Voice input is not supported in this browser. Please use Chrome.', 'error');
-      return;
-    }
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function showConfirm(conf, toolId, pendingInput) {
+  hideWelcome();
+  const detail = conf.details ? JSON.stringify(conf.details, null, 2) : null;
+  const d = document.createElement('div');
+  d.className = 'confirm-card'; d.id = 'confirmCard';
+  d.innerHTML = `
+    <div class="clabel">⚠ Confirm Action</div>
+    <div class="csummary">${esc(conf.summary)}</div>
+    <div class="ccount">Records affected: <strong>${conf.record_count}</strong></div>
+    ${detail ? `<div class="cdetails">${esc(detail)}</div>` : ''}
+    <div class="cbtns">
+      <button class="btn-yes" id="btnYes">✓ Yes, proceed</button>
+      <button class="btn-no" id="btnNo">✕ Cancel</button>
+    </div>`;
+  $('msgs').appendChild(d);
+  scroll();
+  d.querySelector('#btnYes').onclick = () => resolveConfirm(true);
+  d.querySelector('#btnNo').onclick  = () => resolveConfirm(false);
+  pendingTool = { tool_id: toolId, type: 'confirm', pending_tool_input: pendingInput };
+}
 
-    if (isRecording) {
-      stopVoice();
-      return;
-    }
-
-    startVoice();
+function showClarify(question, options, toolId) {
+  hideWelcome();
+  let optsHtml = '';
+  if (options?.length) {
+    optsHtml = `<div class="copts">${options.map(o => `<span class="copt">${esc(o)}</span>`).join('')}</div>`;
   }
+  const d = addMsg('agent', esc(question) + optsHtml);
+  d.querySelectorAll('.copt').forEach(el => {
+    el.onclick = () => resolveInput(el.textContent.trim());
+  });
+  pendingTool = { tool_id: toolId, type: 'input' };
+}
 
-  function startVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+function addMsg(role, html, cls='') {
+  hideWelcome();
+  const d = document.createElement('div');
+  d.className = `msg ${role} ${cls}`.trim();
+  d.innerHTML = `<div class="av">${role==='user'?'👤':'⚡'}</div><div class="bbl">${html}</div>`;
+  $('msgs').appendChild(d);
+  scroll();
+  return d;
+}
 
-    recognition.onstart = () => {
-      isRecording = true;
-      document.getElementById('voiceBtn').classList.add('recording');
-      document.getElementById('voiceHint').style.display = 'block';
-    };
+function think() {
+  hideWelcome();
+  const d = document.createElement('div');
+  d.className = 'msg agent'; d.id = 'thinkMsg';
+  d.innerHTML = '<div class="av">⚡</div><div class="bbl"><div class="typing"><span></span><span></span><span></span></div></div>';
+  $('msgs').appendChild(d);
+  scroll();
+}
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      const ta = document.getElementById('userInput');
-      ta.value = transcript;
-      autoResize(ta);
-      stopVoice();
-      // Auto-send after voice
-      setTimeout(() => sendMessage(), 300);
-    };
+function unthink() { $('thinkMsg')?.remove(); }
 
-    recognition.onerror = (event) => {
-      stopVoice();
-      if (event.error !== 'no-speech') {
-        addMsg('agent', `⚠ Voice error: ${event.error}`, 'error');
-      }
-    };
+function hideWelcome() {
+  if (firstMsg) { $('welcome').style.display='none'; firstMsg=false; }
+}
 
-    recognition.onend = () => stopVoice();
+function disable(on) {
+  isThinking = on;
+  $('sendBtn').disabled = on;
+  $('txt').disabled     = on;
+}
 
-    recognition.start();
-  }
+function scroll() { $('msgsWrap').scrollTop = $('msgsWrap').scrollHeight; }
 
-  function stopVoice() {
-    isRecording = false;
-    document.getElementById('voiceBtn').classList.remove('recording');
-    document.getElementById('voiceHint').style.display = 'none';
-    if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
-  }
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
 
-  // ── UI helpers ───────────────────────────────────────────────────────────
-  function setEnabled(on) {
-    document.getElementById('sendBtn').disabled   = !on;
-    document.getElementById('userInput').disabled = !on;
-    isThinking = !on;
-  }
+function post(payload) {
+  return fetch(WORKER, {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(r => r.json());
+}
 
-  function scrollBottom() {
-    const w = document.getElementById('messagesWrap');
-    w.scrollTop = w.scrollHeight;
-  }
+// ── Example chips ─────────────────────────────────────────────────────────────
+$('msgs').addEventListener('click', e => {
+  const chip = e.target.closest('.ec');
+  if (chip) { $('txt').value = chip.textContent; $('txt').focus(); resize($('txt')); }
+});
 
-  function esc(s) {
-    return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\n/g,'<br>');
-  }
-
-  function hideWelcome() {
-    if (firstMessage) {
-      document.getElementById('welcome').style.display = 'none';
-      firstMessage = false;
-    }
-  }
-
-  function addMsg(role, html, cls = '') {
-    hideWelcome();
-    const msgs = document.getElementById('messages');
-    const d    = document.createElement('div');
-    d.className = `msg ${role} ${cls}`.trim();
-    d.innerHTML = `
-      <div class="msg-avatar">${role === 'user' ? '👤' : '⚡'}</div>
-      <div class="msg-bubble">${html}</div>`;
-    msgs.appendChild(d);
-    scrollBottom();
-    return d;
-  }
-
-  function addThinking() {
-    hideWelcome();
-    const msgs = document.getElementById('messages');
-    const d    = document.createElement('div');
-    d.className = 'msg agent'; d.id = 'thinkMsg';
-    d.innerHTML = '<div class="msg-avatar">⚡</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-    msgs.appendChild(d);
-    scrollBottom();
-  }
-
-  function removeThinking() { document.getElementById('thinkMsg')?.remove(); }
-
-  function addConfirmCard(conf, toolId, pendingInput) {
-    hideWelcome();
-    const msgs   = document.getElementById('messages');
-    const detail = conf.details ? JSON.stringify(conf.details, null, 2) : null;
-    const d      = document.createElement('div');
-    d.className  = 'confirm-card'; d.id = 'confirmCard';
-    d.innerHTML  = `
-      <div class="confirm-label">⚠ Confirm Action</div>
-      <div class="confirm-summary">${esc(conf.summary)}</div>
-      <div class="confirm-count">Records affected: <strong>${conf.record_count}</strong></div>
-      ${detail ? `<div class="confirm-details">${esc(detail)}</div>` : ''}
-      <div class="confirm-btns">
-        <button class="btn-yes" onclick="resolveConfirm(true)">✓ Yes, proceed</button>
-        <button class="btn-no"  onclick="resolveConfirm(false)">✕ Cancel</button>
-      </div>`;
-    msgs.appendChild(d);
-    scrollBottom();
-    pendingTool = { tool_id: toolId, type: 'confirm', pending_tool_input: pendingInput };
-  }
-
-  function addClarifyMsg(question, options, toolId) {
-    let optsHtml = '';
-    if (options?.length) {
-      optsHtml = `<div class="clarify-opts">${options.map(o =>
-        `<span class="clarify-opt" onclick="resolveInput('${esc(o)}')">${esc(o)}</span>`
-      ).join('')}</div>`;
-    }
-    addMsg('agent', esc(question) + optsHtml);
-    pendingTool = { tool_id: toolId, type: 'input' };
-  }
-
-  // ── Send message ─────────────────────────────────────────────────────────
-  async function sendMessage() {
-    if (isThinking) return;
-    const key  = document.getElementById('apiKey').value.trim();
-    const ta   = document.getElementById('userInput');
-    const text = ta.value.trim();
-
-    if (!key)  { addMsg('agent', '⚠ Please enter your Claude API key in the top bar.', 'error'); return; }
-    if (!text && !attachedFile) return;
-
-    if (pendingTool?.type === 'input') { resolveInput(text); return; }
-
-    // Build user message display
-    let displayHtml = '';
-    if (attachedFile) {
-      displayHtml += `<div class="msg-file">📎 ${esc(attachedFile.name)}</div>`;
-    }
-    if (text) displayHtml += esc(text);
-    addMsg('user', displayHtml || `📎 ${esc(attachedFile?.name)}`);
-
-    // Build prompt for worker
-    let prompt = text;
-    if (attachedFile) {
-      prompt = text
-        ? `${text}\n\n[Attached file: ${attachedFile.name}]`
-        : `Process attached file: ${attachedFile.name}`;
-    }
-
-    ta.value = ''; ta.style.height = 'auto';
-    const fileToSend = attachedFile;
-    removeFile();
-    setEnabled(false); addThinking();
-
-    try {
-      const payload = { apiKey: key, prompt, history };
-      if (fileToSend) {
-        payload.attachment = { name: fileToSend.name, base64: fileToSend.base64, type: fileToSend.type };
-      }
-      const data = await post(payload);
-      removeThinking();
-      handleResponse(data);
-    } catch(e) {
-      removeThinking();
-      addMsg('agent', `Network error: ${e.message}`, 'error');
-      setEnabled(true);
-    }
-  }
-
-  // ── Confirm / cancel write action ────────────────────────────────────────
-  async function resolveConfirm(yes) {
-    if (!pendingTool) return;
-    document.getElementById('confirmCard')?.remove();
-    const { tool_id, pending_tool_input } = pendingTool;
-    pendingTool = null;
-
-    addMsg('user', yes ? '✓ Yes, proceed' : '✕ Cancel');
-    setEnabled(false); addThinking();
-
-    try {
-      const data = await post({
-        apiKey: document.getElementById('apiKey').value.trim(),
-        confirmed: yes, tool_id, pending_tool_input, history
-      });
-      removeThinking();
-      handleResponse(data);
-    } catch(e) {
-      removeThinking();
-      addMsg('agent', `Network error: ${e.message}`, 'error');
-      setEnabled(true);
-    }
-  }
-
-  // ── Resolve clarification ────────────────────────────────────────────────
-  async function resolveInput(answer) {
-    if (!answer || !pendingTool) return;
-    const { tool_id } = pendingTool;
-    pendingTool = null;
-
-    const ta = document.getElementById('userInput');
-    addMsg('user', esc(answer));
-    ta.value = ''; ta.style.height = 'auto';
-    setEnabled(false); addThinking();
-
-    try {
-      const data = await post({
-        apiKey: document.getElementById('apiKey').value.trim(),
-        user_answer: answer, tool_id, history
-      });
-      removeThinking();
-      handleResponse(data);
-    } catch(e) {
-      removeThinking();
-      addMsg('agent', `Network error: ${e.message}`, 'error');
-      setEnabled(true);
-    }
-  }
-
-  // ── Handle worker response ───────────────────────────────────────────────
-  function handleResponse(data) {
-    if (data.history) history = data.history;
-
-    if (data.error) {
-      addMsg('agent', `❌ ${esc(data.error)}`, 'error');
-      setEnabled(true);
-      return;
-    }
-
-    if (data.needs_confirmation) {
-      if (data.response) addMsg('agent', esc(data.response));
-      addConfirmCard(data.confirmation, data.tool_id, data.pending_tool_input);
-      setEnabled(true);
-      return;
-    }
-
-    if (data.needs_input) {
-      addClarifyMsg(data.question, data.options, data.tool_id);
-      setEnabled(true);
-      return;
-    }
-
-    if (data.response) {
-      const cls = data.response.includes('⚠') ? 'blocked' : '';
-      addMsg('agent', esc(data.response), cls);
-    }
-    setEnabled(true);
-  }
-
-  // ── POST helper ──────────────────────────────────────────────────────────
-  async function post(payload) {
-    const r = await fetch(WORKER_URL, {
-      method:  'POST',
-      headers: { 'content-type': 'application/json' },
-      body:    JSON.stringify(payload)
-    });
-    return r.json();
-  }
-
-  // ── Clear chat ───────────────────────────────────────────────────────────
-  function clearChat() {
-    history = []; pendingTool = null; firstMessage = true;
-    removeFile(); stopVoice();
-    document.getElementById('messages').innerHTML = `
-      <div class="welcome" id="welcome">
-        <div class="welcome-icon">⚡</div>
-        <h2>What can I help you with?</h2>
-        <p>Ask anything about your Zoho CRM. I'll confirm before making any changes and never affect more than 50 records at once.</p>
-        <div class="example-grid">
-          <div class="example-chip" onclick="useExample(this)">How many leads do we have?</div>
-          <div class="example-chip" onclick="useExample(this)">Create lead: Sarah Johnson, sarah@acme.com</div>
-          <div class="example-chip" onclick="useExample(this)">Update John Doe's email to john@gmail.com</div>
-          <div class="example-chip" onclick="useExample(this)">Show all deals sorted by amount</div>
-          <div class="example-chip" onclick="useExample(this)">Find leads with no email</div>
-          <div class="example-chip" onclick="useExample(this)">Expected revenue this quarter?</div>
-        </div>
-      </div>`;
-  }
+// ── Clear ─────────────────────────────────────────────────────────────────────
+function clearChat() {
+  history=[]; pendingTool=null; firstMsg=true; isRec=false;
+  attachedFile=null;
+  $('filePrev').classList.remove('show');
+  $('fpName').textContent='';
+  stopVoice();
+  $('msgs').innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="wicon">⚡</div>
+      <h2>What can I help you with?</h2>
+      <p>Ask anything about your Zoho CRM. I'll confirm before making any changes and never affect more than 50 records at once.</p>
+      <div class="eg">
+        <div class="ec">How many leads do we have?</div>
+        <div class="ec">Create lead: Sarah Johnson, sarah@acme.com</div>
+        <div class="ec">Update John Doe's email to john@gmail.com</div>
+        <div class="ec">Show all deals sorted by amount</div>
+        <div class="ec">Find leads with no email</div>
+        <div class="ec">Expected revenue this quarter?</div>
+      </div>
+    </div>`;
+}
 </script>
 </body>
 </html>
